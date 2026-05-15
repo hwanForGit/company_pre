@@ -1,0 +1,12 @@
+# 로컬 시크릿 (절대 commit 금지)
+secrets.local.md
+*.local.md
+.env
+.env.*
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
