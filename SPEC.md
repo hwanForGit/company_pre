@@ -265,10 +265,11 @@ company_pre/
 **메시지 본문 예시 (Block Kit)**:
 ```json
 {
+  "text": "📨 중소기업인재키움프리미엄 신규 신청 — {{회사명}}",
   "blocks": [
     {
-      "type": "header",
-      "text": { "type": "plain_text", "text": "📨 중소기업인재키움프리미엄 신규 신청" }
+      "type": "section",
+      "text": { "type": "mrkdwn", "text": "<@U056J4GK86M> <@U03AWSR2BD0> <@U0ADQHJSYNA>\n📨 *중소기업인재키움프리미엄 신규 신청*" }
     },
     {
       "type": "section",
@@ -286,15 +287,18 @@ company_pre/
     {
       "type": "context",
       "elements": [
-        { "type": "mrkdwn", "text": "담당자: ariel@inflab.com · shhwang@inflab.com · hj.kim@inflab.com · leez0602@inflab.com" }
+        { "type": "mrkdwn", "text": "담당자: ariel@inflab.com · shhwang@inflab.com · hj.kim@inflab.com" }
       ]
     }
   ]
 }
 ```
 
+> 💡 **멘션 위치**: 첫 번째 section block의 맨 위에 멘션을 두는 이유 — Slack의 알림 규칙상 멘션이 메시지 상단에 있어야 모바일 푸시·배지가 강하게 발동.
+
 > Block Kit이 부담스러우면 단순 markdown text로도 가능:
 > ```
+> <@U056J4GK86M> <@U03AWSR2BD0> <@U0ADQHJSYNA>
 > 📨 *중소기업인재키움프리미엄 신규 신청*
 > • 회사명: {{회사명}}
 > • 신청자: {{이름}}
@@ -314,13 +318,19 @@ Slack Incoming Webhook은 파일 전송이 불가하므로, **Slack Web API `fil
 자세한 코드는 §6.1 참고.
 
 ### 5.3 담당자 통보 방식
-이메일 발송이 없어졌으므로, 담당자 4명(`ariel@inflab.com`, `shhwang@inflab.com`, `hj.kim@inflab.com`, `leez0602@inflab.com`)에게 신청 사실을 전달하는 수단은:
+이메일 발송이 없어졌으므로, 담당자 3명에게 신청 사실을 전달하는 수단은 슬랙 채널 알림 + 멘션이다.
 
-- **슬랙 채널 알림** — 4명 모두 해당 채널에 참여하고 알림을 켜둬야 함
-- 필요 시 메시지 내에 `<@U_USER_ID>` 멘션 추가 (운영자가 4명의 Slack member ID 제공 시)
-- 모바일 알림 누락 방지를 위해 채널 알림 설정을 "모든 메시지"로 권장
+| 이메일 | Slack Member ID | 멘션 |
+|--------|-----------------|------|
+| ariel@inflab.com | U056J4GK86M | `<@U056J4GK86M>` |
+| shhwang@inflab.com | U03AWSR2BD0 | `<@U03AWSR2BD0>` |
+| hj.kim@inflab.com | U0ADQHJSYNA | `<@U0ADQHJSYNA>` |
 
-> 🔑 **운영자에게 요청**: 알림 채널에 담당자 4명이 모두 참여했는지 확인 + 채널명 알려주기 (메시지에 채널명 노출 시 사용)
+- 메시지 첫 줄에 3명 멘션을 모두 포함 → 모바일 푸시·배지 강하게 발동
+- 채널 알림이 "멘션만"이어도 안정적으로 도달
+- `leez0602@inflab.com`은 담당자 리스트 및 멘션 대상에서 제외됨 (2026-05-18 운영자 결정)
+
+> 🔑 **운영자에게 요청**: 알림 채널에 위 3명이 모두 참여했는지 확인. 신규 인원 추가/교체 시 멤버 ID와 함께 알림.
 
 ---
 
@@ -515,12 +525,18 @@ window.SKP_CONFIG = {
   // 파일 업로드 대상 채널 ID — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
   SLACK_CHANNEL_ID: "<REPLACE_WITH_CHANNEL_ID>",
 
-  // 담당자 이메일 (메시지 본문 표시용, 발송용 아님) — ✅ 확정
+  // 담당자 이메일 (메시지 본문 표시용, 발송용 아님) — ✅ 확정 (3명)
   ADMIN_EMAILS: [
     "ariel@inflab.com",
     "shhwang@inflab.com",
-    "hj.kim@inflab.com",
-    "leez0602@inflab.com"
+    "hj.kim@inflab.com"
+  ],
+
+  // 담당자 Slack Member ID (메시지 첫 줄 멘션용) — ✅ 확정
+  SLACK_MENTION_USER_IDS: [
+    "U056J4GK86M",  // ariel@inflab.com
+    "U03AWSR2BD0",  // shhwang@inflab.com
+    "U0ADQHJSYNA"   // hj.kim@inflab.com
   ],
 
   // 양식 파일 호스팅 URL — ⏳ 운영자 업로드 후 입력
@@ -605,8 +621,8 @@ secrets.local.md
 - [x] ~~알림 방식~~ → ✅ **슬랙만 사용 (이메일 전체 제거)**
 - [x] ~~Slack Bot Token~~ → ✅ 발급 완료 (실제 값은 `secrets.local.md`)
 - [x] ~~Slack 알림 채널 ID~~ → ✅ 발급 완료 (실제 값은 `secrets.local.md`)
-- [ ] **sample.xlsx 절대 URL** → 📌 프로젝트 마지막 단계에서 처리 (구현 중에는 placeholder URL 사용)
-- [ ] **(선택) 담당자 4명의 Slack member ID** → ⏳ 메시지에 멘션(`<@U...>`) 추가 시 필요
+- [x] ~~sample.xlsx 절대 URL~~ → ✅ 발급 완료 (실제 값은 `secrets.local.md`, CloudFront 호스팅, HTTPS)
+- [x] ~~담당자 Slack member ID~~ → ✅ 확정 (3명, leez0602 제외) — §5.3 표 참고
 
 ---
 
