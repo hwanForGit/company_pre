@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>중소기업인재키움프리미엄 - 인프런 AI 교육 90% 지원</title>
+
+<!-- Pretendard 폰트 (인프런 톤 재현용) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+
+<!-- ============================================
+  CONFIG — 운영자 수정 영역
+  발급/변경 시 아래 값만 갱신하면 동작합니다.
+  실제 시크릿 값은 secrets.local.md 참고
+============================================ -->
+<script>
+window.SKP_CONFIG = {
+  // Slack Incoming Webhook (메시지) — 실제 값은 secrets.local.md 참고
+  SLACK_WEBHOOK_URL: "<REPLACE_WITH_WEBHOOK_URL>",
+
+  // Slack Bot Token (파일 업로드) — 실제 값은 secrets.local.md 참고
+  SLACK_BOT_TOKEN: "<REPLACE_WITH_BOT_TOKEN>",
+
+  // 파일 업로드 대상 채널 ID — 실제 값은 secrets.local.md 참고
+  SLACK_CHANNEL_ID: "<REPLACE_WITH_CHANNEL_ID>",
+
+  // 담당자 이메일 (메시지 본문 표시용)
+  ADMIN_EMAILS: [
+    "ariel@inflab.com",
+    "shhwang@inflab.com",
+    "hj.kim@inflab.com",
+    "leez0602@inflab.com"
+  ],
+
+  // 양식 파일 호스팅 URL — 프로젝트 마무리 단계에 실제 URL로 교체
+  SAMPLE_XLSX_URL: "<REPLACE_WITH_SAMPLE_XLSX_URL>",
+
+  // 우선지원 대상 기업 신청 링크
+  GOV_PRIORITY_CHECK_URL: "https://www.gov.kr/mw/AA020InfoCappView.do?HighCtgCD=A05007&CappBizCD=14900000031&tp_seq="
+};
+</script>
+
+<!-- ============================================
+  STYLES — skp- prefix로 격리
+============================================ -->
+<style>
+/* ========== 디자인 토큰 ========== */
+.skp-root {
+  --skp-color-primary: #1dc078;
+  --skp-color-primary-hover: #15a767;
+  --skp-color-text-primary: #212529;
+  --skp-color-text-secondary: #495057;
+  --skp-color-text-muted: #868e96;
+  --skp-color-border: #e9ecef;
+  --skp-color-bg: #ffffff;
+  --skp-color-bg-soft: #f8f9fa;
+  --skp-color-warning-bg: #fff8e1;
+  --skp-color-warning-text: #7a5b00;
+
+  font-family: Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color: var(--skp-color-text-primary);
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.skp-root *,
+.skp-root *::before,
+.skp-root *::after {
+  box-sizing: border-box;
+}
+
+/* ========== 컨테이너 ========== */
+.skp-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 480px) {
+  .skp-container { padding: 0 16px; }
+}
+
+/* ========== 섹션 공통 ========== */
+.skp-section {
+  padding: 80px 0;
+}
+
+@media (max-width: 768px) {
+  .skp-section { padding: 48px 0; }
+}
+
+.skp-section-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  color: var(--skp-color-text-primary);
+}
+
+.skp-section-subtitle {
+  font-size: 16px;
+  color: var(--skp-color-text-secondary);
+  margin: 0 0 40px;
+}
+
+/* ========== 히어로 ========== */
+.skp-hero {
+  background: linear-gradient(135deg, #e8f9f0 0%, #ffffff 100%);
+  padding: 100px 0 80px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .skp-hero { padding: 60px 0 48px; }
+}
+
+.skp-hero-badge {
+  display: inline-block;
+  background: var(--skp-color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+}
+
+.skp-hero-title {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px;
+  color: var(--skp-color-text-primary);
+}
+
+.skp-hero-title em {
+  color: var(--skp-color-primary);
+  font-style: normal;
+}
+
+@media (max-width: 768px) {
+  .skp-hero-title { font-size: 28px; }
+}
+
+.skp-hero-desc {
+  font-size: 18px;
+  color: var(--skp-color-text-secondary);
+  margin: 0 0 36px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .skp-hero-desc { font-size: 16px; }
+}
+
+.skp-hero-meta {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--skp-color-border);
+  color: var(--skp-color-text-secondary);
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-top: 24px;
+}
+
+/* ========== 버튼 ========== */
+.skp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.2;
+}
+
+.skp-btn-primary {
+  background: var(--skp-color-primary);
+  color: #fff;
+}
+
+.skp-btn-primary:hover {
+  background: var(--skp-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 192, 120, 0.25);
+}
+
+.skp-btn-primary:disabled {
+  background: #dee2e6;
+  color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.skp-btn-secondary {
+  background: var(--skp-color-bg-soft);
+  color: var(--skp-color-text-primary);
+  border: 1px solid var(--skp-color-border);
+}
+
+.skp-btn-secondary:hover {
+  background: #eef0f3;
+  transform: translateY(-1px);
+}
+
+.skp-btn-lg {
+  font-size: 18px;
+  padding: 16px 36px;
+}
+
+/* ========== 통계 카드 (혜택 강조) ========== */
+.skp-stats {
+  background: var(--skp-color-bg-soft);
+  padding: 64px 0;
+}
+
+.skp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .skp-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+
+.skp-stat-card {
+  background: var(--skp-color-bg);
+  border: 1px solid var(--skp-color-border);
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.skp-stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--skp-color-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .skp-stat-value { font-size: 28px; }
+}
+
+.skp-stat-label {
+  font-size: 14px;
+  color: var(--skp-color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ========== 정보 카드 (지원 안내) ========== */
+.skp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .skp-info-grid { grid-template-columns: 1fr; }
+}
+
+.skp-info-card {
+  background: var(--skp-color-bg);
+  border: 1px solid var(--skp-color-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.skp-info-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--skp-color-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.skp-info-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--skp-color-text-primary);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.skp-info-card-desc {
+  font-size: 14px;
+  color: var(--skp-color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ========== 격려 메시지 ========== */
+.skp-encourage {
+  background: linear-gradient(135deg, #e8f9f0 0%, #d4f1e0 100%);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.skp-encourage-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--skp-color-text-primary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .skp-encourage { padding: 28px 20px; }
+  .skp-encourage-text { font-size: 16px; }
+}
+
+/* ========== 담당자 문의 ========== */
+.skp-contact {
+  background: var(--skp-color-bg-soft);
+  border: 1px solid var(--skp-color-border);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+}
+
+.skp-contact-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.skp-contact-desc {
+  font-size: 15px;
+  color: var(--skp-color-text-secondary);
+  margin: 0 0 24px;
+}
+
+.skp-contact-info {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--skp-color-bg);
+  border: 1px solid var(--skp-color-border);
+  border-radius: 10px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+
+.skp-contact-info-row {
+  font-size: 15px;
+  color: var(--skp-color-text-primary);
+}
+
+.skp-contact-info-row strong {
+  color: var(--skp-color-text-secondary);
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.skp-contact-info-row a {
+  color: var(--skp-color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skp-contact-info-row a:hover {
+  text-decoration: underline;
+}
+
+/* ========== 최종 CTA 섹션 ========== */
+.skp-final-cta {
+  text-align: center;
+  padding: 80px 0 100px;
+}
+
+.skp-final-cta-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.skp-final-cta-desc {
+  font-size: 16px;
+  color: var(--skp-color-text-secondary);
+  margin: 0 0 32px;
+}
+
+@media (max-width: 768px) {
+  .skp-final-cta { padding: 48px 0 64px; }
+  .skp-final-cta-title { font-size: 22px; }
+}
+
+/* ========== 푸터 메모 ========== */
+.skp-footnote {
+  font-size: 13px;
+  color: var(--skp-color-text-muted);
+  text-align: center;
+  padding: 24px 0 40px;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+  본문 — 모든 콘텐츠는 .skp-root 안에 격리
+============================================ -->
+<div class="skp-root">
+
+  <!-- ===== Hero 섹션 ===== -->
+  <section class="skp-hero">
+    <div class="skp-container">
+      <span class="skp-hero-badge">중소기업인재키움프리미엄</span>
+      <h1 class="skp-hero-title">
+        중소기업 경쟁력을 위한<br>
+        인프런 <em>AI 교육 90% 지원</em>
+      </h1>
+      <p class="skp-hero-desc">
+        중소기업인재키움프리미엄 훈련으로 최소 500만원 이상의 교육비를 지원받고,<br>
+        실무에 바로 쓰이는 AI 활용 역량으로 기업의 경쟁력을 키워보세요.
+      </p>
+      <button type="button" class="skp-btn skp-btn-primary skp-btn-lg skp-apply-btn">
+        지금 신청하기 →
+      </button>
+      <div class="skp-hero-meta">
+        지원금 90% · 기업 10% · 재직자 0%
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 통계 카드 (혜택 강조) ===== -->
+  <section class="skp-stats">
+    <div class="skp-container">
+      <div class="skp-stats-grid">
+        <div class="skp-stat-card">
+          <div class="skp-stat-value">90%</div>
+          <div class="skp-stat-label">교육비 환급률<br>(기업 실부담 기준)</div>
+        </div>
+        <div class="skp-stat-card">
+          <div class="skp-stat-value">500만 원</div>
+          <div class="skp-stat-label">최소 지원 금액<br>(기업당 연간 한도)</div>
+        </div>
+        <div class="skp-stat-card">
+          <div class="skp-stat-value">6시간</div>
+          <div class="skp-stat-label">1일 완성 과정<br>(실무 중심 커리큘럼)</div>
+        </div>
+        <div class="skp-stat-card">
+          <div class="skp-stat-value">0원</div>
+          <div class="skp-stat-label">재직자 부담<br>(회사 10%, 지원금 90%)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 지원 안내 섹션 ===== -->
+  <section class="skp-section">
+    <div class="skp-container">
+      <h2 class="skp-section-title">지원 내용 안내</h2>
+      <p class="skp-section-subtitle">
+        중소기업인재키움프리미엄 훈련 지원 사업의 핵심 내용입니다.
+      </p>
+
+      <div class="skp-info-grid">
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">지원 대상</div>
+          <div class="skp-info-card-title">우선지원대상기업 소속 근로자</div>
+          <p class="skp-info-card-desc">
+            우선지원대상기업 소속의 고용보험 가입 근로자(훈련 개시일 기준)가 대상이며, 기업 단위로만 신청 가능합니다.
+          </p>
+        </div>
+
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">지원 내용</div>
+          <div class="skp-info-card-title">교육비 90% 환급</div>
+          <p class="skp-info-card-desc">
+            사업주가 실제 부담한 교육비의 90%를 환급받을 수 있습니다. 재직자 본인 부담은 없습니다.
+          </p>
+        </div>
+
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">환급 한도</div>
+          <div class="skp-info-card-title">고용보험 개산보험료의 240%</div>
+          <p class="skp-info-card-desc">
+            기업의 고용보험 납부액에 따라 한도가 상이합니다. 자세한 한도는 담당자에게 문의해 주세요.
+          </p>
+        </div>
+
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">최소 지원</div>
+          <div class="skp-info-card-title">최소 500만 원 이상 지원</div>
+          <p class="skp-info-card-desc">
+            계산된 환급 금액이 500만 원 이하인 경우에도 최소 500만 원까지 지원받을 수 있습니다.
+          </p>
+        </div>
+
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">환급 방법</div>
+          <div class="skp-info-card-title">교육 종료 후 정산</div>
+          <p class="skp-info-card-desc">
+            교육이 모두 종료된 이후 인프런이 환급 정산을 진행합니다.
+          </p>
+        </div>
+
+        <div class="skp-info-card">
+          <div class="skp-info-card-label">신청 마감</div>
+          <div class="skp-info-card-title">예산 소진 시 조기 마감</div>
+          <p class="skp-info-card-desc">
+            연간 예산이 모두 소진되면 신청이 조기 마감될 수 있습니다. 빠른 신청을 권장드립니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 신청 방법 섹션 ===== -->
+  <section class="skp-section" style="background: var(--skp-color-bg-soft);">
+    <div class="skp-container">
+      <h2 class="skp-section-title">신청 방법</h2>
+      <p class="skp-section-subtitle">
+        아래 버튼을 통해 신청 양식을 다운로드하고 작성된 양식을 업로드해 주세요.
+      </p>
+
+      <div style="text-align: center; padding: 32px 0;">
+        <button type="button" class="skp-btn skp-btn-primary skp-btn-lg skp-apply-btn">
+          지금 신청하기 →
+        </button>
+        <p style="margin-top: 16px; font-size: 14px; color: var(--skp-color-text-muted);">
+          신청 양식 다운로드 → 작성 → 업로드 → 담당자 검토
+        </p>
+      </div>
+
+      <div class="skp-encourage">
+        <p class="skp-encourage-text">
+          이제 업무에 AI를 얼마나 잘 활용하느냐가 생존의 열쇠입니다.<br>
+          같이 힘을 내요! 💪🏼 인프런이 도와줌!!
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 담당자 문의 섹션 ===== -->
+  <section class="skp-section">
+    <div class="skp-container">
+      <div class="skp-contact">
+        <h2 class="skp-contact-title">단체·기업 문의</h2>
+        <p class="skp-contact-desc">
+          궁금하신 점은 아래 담당자에게 편하게 문의해 주세요.
+        </p>
+        <div class="skp-contact-info">
+          <div class="skp-contact-info-row">
+            <strong>담당자</strong>진보경 매니저
+          </div>
+          <div class="skp-contact-info-row">
+            <strong>이메일</strong>
+            <a href="mailto:ariel@inflab.com">ariel@inflab.com</a>
+          </div>
+        </div>
+        <div>
+          <a href="mailto:ariel@inflab.com" class="skp-btn skp-btn-secondary">
+            단체 문의하기
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 최종 CTA ===== -->
+  <section class="skp-final-cta">
+    <div class="skp-container">
+      <h2 class="skp-final-cta-title">
+        지금 바로 신청하고<br>
+        AI 교육 90% 지원을 받아보세요
+      </h2>
+      <p class="skp-final-cta-desc">
+        예산 소진 시 조기 마감될 수 있으니 서둘러 주세요.
+      </p>
+      <button type="button" class="skp-btn skp-btn-primary skp-btn-lg skp-apply-btn">
+        지금 신청하기 →
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== 푸터 메모 ===== -->
+  <div class="skp-footnote skp-container">
+    ※ 본 페이지의 모든 정보는 변동될 수 있으며, 정확한 지원 내용은 고용노동부·근로복지공단 안내를 따릅니다.
+  </div>
+
+</div>
+
+<!-- ============================================
+  SCRIPTS — 모듈 분리, .skp-apply-btn 클릭 핸들러
+  (Phase 2에서 모달 열기로 교체 예정)
+============================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // 모든 신청 버튼에 임시 핸들러 연결 (Phase 2에서 모달 열기로 교체)
+  function bindApplyButtons() {
+    var buttons = document.querySelectorAll('.skp-apply-btn');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        console.info('[SKP] 신청 버튼 클릭 — 모달 구현 예정 (Phase 2)');
+        alert('신청 모달은 다음 단계(Phase 2)에서 구현됩니다.');
+      });
+    });
+    console.info('[SKP] 신청 버튼 ' + buttons.length + '개 바인딩 완료');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindApplyButtons);
+  } else {
+    bindApplyButtons();
+  }
+})();
+</script>
+
+</body>
+</html>

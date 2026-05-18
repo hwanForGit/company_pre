@@ -44,8 +44,8 @@
 ### 1.3 사용 외부 서비스
 | 용도 | 서비스 | 상태 | 비고 |
 |------|--------|------|------|
-| 알림 메시지 | **Slack Incoming Webhook** | ✅ 확정 | URL은 git 추적에서 제외된 `secrets.local.md`에 보관 (시크릿) |
-| 파일 업로드 | **Slack Web API (`files.uploadV2`)** | ⏳ Bot Token 발급 대기 | Incoming Webhook은 파일 전송 불가 → 별도 Slack App + Bot Token 필요 (§6.1) |
+| 알림 메시지 | **Slack Incoming Webhook** | ✅ 확정 | URL은 git 추적에서 제외된 `secrets.local.md`에 보관 |
+| 파일 업로드 | **Slack Web API (`files.uploadV2`)** | ✅ 확정 | Bot Token + 채널 ID 발급 완료, 실제 값은 `secrets.local.md` |
 
 > ⚠️ **Slack Webhook URL 및 Bot Token 노출 관련**: 두 값 모두 최종 산출물(공개 페이지) 코드에 포함됩니다. 악성 사용자가 이를 도용해 임의 메시지·파일을 보낼 수 있으므로:
 > - 알림 전용 채널을 별도로 두고 다른 민감 정보가 흐르지 않도록 격리
@@ -464,7 +464,7 @@ async function submitApplication(form, file) {
 ### Phase 2 — 신청 모달 UI (1일)
 - [ ] 모달 DOM 구조 작성 (페이지 하단에 hidden으로 배치)
 - [ ] 안내 영역 (우선지원 대상 기업 안내, 전화번호, 정부 링크) 완성
-- [ ] 양식 다운로드 버튼 (sample.xlsx 호스팅 URL 연결)
+- [ ] 양식 다운로드 버튼 (`SAMPLE_XLSX_URL` placeholder로 우선 연결, 실제 URL은 Phase 4에서 교체)
 - [ ] 파일 업로드 input + 선택 파일명 표시
 - [ ] 신청자 정보 입력 폼
 - [ ] 실시간 검증 → 버튼 활성/비활성 토글
@@ -479,6 +479,7 @@ async function submitApplication(form, file) {
 - [ ] 성공/실패 UI 분기 처리
 
 ### Phase 4 — 마감/QA (반나절)
+- [ ] **sample.xlsx 실제 호스팅 URL 교체** (운영자가 업로드 후 전달한 URL을 `SAMPLE_XLSX_URL`에 반영)
 - [ ] 반응형 (모바일/태블릿/데스크탑) 점검
 - [ ] TinyMCE에 실제 붙여넣고 동작 확인
 - [ ] 슬랙 메시지/파일 실제 수신 확인 (테스트 채널에서 1회 전송)
@@ -508,11 +509,11 @@ window.SKP_CONFIG = {
   // Slack Incoming Webhook (메시지) — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
   SLACK_WEBHOOK_URL: "<REPLACE_WITH_WEBHOOK_URL>",
 
-  // Slack Bot Token (파일 업로드) — ⏳ 발급 후 입력 (xoxb-...)
-  SLACK_BOT_TOKEN: "",
+  // Slack Bot Token (파일 업로드) — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
+  SLACK_BOT_TOKEN: "<REPLACE_WITH_BOT_TOKEN>",
 
-  // 파일 업로드 대상 채널 ID — ⏳ 발급 후 입력 (예: C0XXXXXXXX)
-  SLACK_CHANNEL_ID: "",
+  // 파일 업로드 대상 채널 ID — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
+  SLACK_CHANNEL_ID: "<REPLACE_WITH_CHANNEL_ID>",
 
   // 담당자 이메일 (메시지 본문 표시용, 발송용 아님) — ✅ 확정
   ADMIN_EMAILS: [
@@ -602,9 +603,9 @@ secrets.local.md
 - [x] ~~원본 인플런 페이지 콘텐츠 이전 방식~~ → ✅ 텍스트만 옮기고 디자인 재작성
 - [x] ~~디자인 톤 기준~~ → ✅ 인플런 디자인 톤 그대로 재현 (§3.5)
 - [x] ~~알림 방식~~ → ✅ **슬랙만 사용 (이메일 전체 제거)**
-- [ ] **Slack Bot Token** (`xoxb-...`) → ⏳ 운영자 발급 필요 (§6.1 Step 1~5)
-- [ ] **Slack 알림 채널 ID** (`C0XXXXXXXX`) → ⏳ 채널 생성 + 봇 초대 후 ID 전달
-- [ ] **sample.xlsx 절대 URL** → ⏳ 운영자 업로드 후 전달
+- [x] ~~Slack Bot Token~~ → ✅ 발급 완료 (실제 값은 `secrets.local.md`)
+- [x] ~~Slack 알림 채널 ID~~ → ✅ 발급 완료 (실제 값은 `secrets.local.md`)
+- [ ] **sample.xlsx 절대 URL** → 📌 프로젝트 마지막 단계에서 처리 (구현 중에는 placeholder URL 사용)
 - [ ] **(선택) 담당자 4명의 Slack member ID** → ⏳ 메시지에 멘션(`<@U...>`) 추가 시 필요
 
 ---
