@@ -412,6 +412,356 @@ window.SKP_CONFIG = {
   padding: 24px 0 40px;
   line-height: 1.6;
 }
+
+/* ============================================
+  모달 (신청 모달) — Phase 2
+============================================ */
+
+/* 오버레이 (배경 dim) */
+.skp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 40px 16px;
+  animation: skp-fade-in 0.2s ease;
+}
+
+.skp-modal-overlay.skp-modal-open {
+  display: flex;
+}
+
+@keyframes skp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 모달 본체 */
+.skp-modal-content {
+  position: relative;
+  background: var(--skp-color-bg);
+  width: 100%;
+  max-width: 560px;
+  border-radius: 16px;
+  padding: 36px 32px 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: skp-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: auto 0;
+}
+
+@keyframes skp-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .skp-modal-overlay { padding: 0; align-items: stretch; }
+  .skp-modal-content {
+    border-radius: 0;
+    min-height: 100vh;
+    padding: 56px 20px 32px;
+    margin: 0;
+  }
+}
+
+/* 닫기 버튼 */
+.skp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--skp-color-text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  line-height: 1;
+}
+
+.skp-modal-close:hover {
+  background: var(--skp-color-bg-soft);
+  color: var(--skp-color-text-primary);
+}
+
+/* 모달 타이틀 */
+.skp-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+  color: var(--skp-color-text-primary);
+  line-height: 1.4;
+}
+
+/* 중요 안내 박스 */
+.skp-notice {
+  background: var(--skp-color-warning-bg);
+  border: 1px solid #f5d77a;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 28px;
+}
+
+.skp-notice-head {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--skp-color-warning-text);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+
+.skp-notice-body {
+  font-size: 13px;
+  color: var(--skp-color-warning-text);
+  line-height: 1.7;
+}
+
+.skp-notice-body p {
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+
+.skp-notice-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.skp-notice-body ul ul {
+  margin-left: 12px;
+}
+
+.skp-notice-body li {
+  padding-left: 12px;
+  position: relative;
+}
+
+.skp-notice-body li::before {
+  content: "·";
+  position: absolute;
+  left: 2px;
+}
+
+.skp-notice-body a {
+  color: var(--skp-color-warning-text);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* 단계 카드 */
+.skp-step {
+  margin-bottom: 24px;
+}
+
+.skp-step-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--skp-color-primary);
+  background: rgba(29, 192, 120, 0.1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.skp-step-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--skp-color-text-primary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.skp-required {
+  color: #fa5252;
+  margin-left: 2px;
+}
+
+/* 다운로드 버튼 (full width) */
+.skp-download-btn {
+  width: 100%;
+}
+
+/* 파일 입력 */
+.skp-file-wrap {
+  position: relative;
+}
+
+.skp-file-wrap input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.skp-file-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px dashed var(--skp-color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  background: var(--skp-color-bg-soft);
+}
+
+.skp-file-label:hover {
+  border-color: var(--skp-color-primary);
+  background: rgba(29, 192, 120, 0.04);
+}
+
+.skp-file-label.skp-file-selected {
+  border-style: solid;
+  border-color: var(--skp-color-primary);
+  background: rgba(29, 192, 120, 0.04);
+}
+
+.skp-file-label.skp-has-error {
+  border-color: #fa5252;
+  background: rgba(250, 82, 82, 0.04);
+}
+
+.skp-file-btn {
+  flex-shrink: 0;
+  background: var(--skp-color-bg);
+  border: 1px solid var(--skp-color-border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--skp-color-text-primary);
+}
+
+.skp-file-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--skp-color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skp-file-label.skp-file-selected .skp-file-name {
+  color: var(--skp-color-text-primary);
+  font-weight: 500;
+}
+
+/* 폼 필드 */
+.skp-field {
+  margin-bottom: 14px;
+}
+
+.skp-field:last-child {
+  margin-bottom: 0;
+}
+
+.skp-field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--skp-color-text-primary);
+  margin-bottom: 8px;
+}
+
+.skp-field-input {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--skp-color-border);
+  border-radius: 8px;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--skp-color-text-primary);
+  background: var(--skp-color-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.skp-field-input::placeholder {
+  color: var(--skp-color-text-muted);
+}
+
+.skp-field-input:focus {
+  border-color: var(--skp-color-primary);
+  box-shadow: 0 0 0 3px rgba(29, 192, 120, 0.15);
+}
+
+.skp-field-input.skp-has-error {
+  border-color: #fa5252;
+}
+
+.skp-field-input.skp-has-error:focus {
+  box-shadow: 0 0 0 3px rgba(250, 82, 82, 0.15);
+}
+
+.skp-field-error {
+  font-size: 12px;
+  color: #fa5252;
+  margin-top: 6px;
+  min-height: 16px;
+  line-height: 1.4;
+}
+
+/* 제출 버튼 */
+.skp-submit-btn {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* 완료 화면 */
+.skp-success {
+  text-align: center;
+  padding: 24px 0 8px;
+}
+
+.skp-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--skp-color-primary);
+  color: #fff;
+  font-size: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  line-height: 1;
+}
+
+.skp-success-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--skp-color-text-primary);
+}
+
+.skp-success-desc {
+  font-size: 15px;
+  color: var(--skp-color-text-secondary);
+  line-height: 1.7;
+  margin: 0 0 28px;
+}
+
+/* body 스크롤 잠금 (모달 열림 시) */
+body.skp-modal-active {
+  overflow: hidden;
+}
 </style>
 </head>
 <body>
@@ -599,32 +949,434 @@ window.SKP_CONFIG = {
     ※ 본 페이지의 모든 정보는 변동될 수 있으며, 정확한 지원 내용은 고용노동부·근로복지공단 안내를 따릅니다.
   </div>
 
+  <!-- ============================================
+    신청 모달 — Phase 2
+    클릭 트리거: .skp-apply-btn
+  ============================================ -->
+  <div class="skp-modal-overlay" id="skp-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="skp-modal-title">
+    <div class="skp-modal-content" role="document">
+
+      <button type="button" class="skp-modal-close" id="skp-modal-close-btn" aria-label="닫기">✕</button>
+
+      <!-- 신청 폼 (기본 표시) -->
+      <div id="skp-modal-form-view">
+        <h2 class="skp-modal-title" id="skp-modal-title">중소기업인재키움프리미엄 신청</h2>
+
+        <!-- 중요 안내 -->
+        <div class="skp-notice">
+          <p class="skp-notice-head">
+            본 프로그램은 우선지원대상기업 소속 근로자를 대상으로 <strong>'기업 단위'</strong>로만 신청 가능합니다.
+          </p>
+          <div class="skp-notice-body">
+            <p>▸ 우선지원 대상 기업 확인 방법</p>
+            <ul>
+              <li>전화 문의
+                <ul>
+                  <li>고용노동부 고객센터: 국번없이 <strong>1350</strong></li>
+                  <li>근로복지공단: <strong>1588-0075</strong></li>
+                </ul>
+              </li>
+              <li>온라인 확인: <a href="https://www.gov.kr/mw/AA020InfoCappView.do?HighCtgCD=A05007&CappBizCD=14900000031&tp_seq=" target="_blank" rel="noopener noreferrer">우선지원 대상 기업 신청하기 →</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- STEP 1 — 양식 다운로드 -->
+        <div class="skp-step">
+          <div class="skp-step-label">STEP 1</div>
+          <div class="skp-step-title">신청 양식 다운로드</div>
+          <a href="#" id="skp-download-link" class="skp-btn skp-btn-secondary skp-download-btn" download>
+            📥 신청 양식(sample.xlsx) 다운로드
+          </a>
+        </div>
+
+        <!-- STEP 2 — 파일 업로드 -->
+        <div class="skp-step">
+          <div class="skp-step-label">STEP 2</div>
+          <div class="skp-step-title">작성한 양식 업로드 <span class="skp-required">*</span></div>
+          <div class="skp-file-wrap">
+            <input type="file" id="skp-file" accept=".xlsx,.xls" aria-describedby="skp-file-error">
+            <label for="skp-file" class="skp-file-label" id="skp-file-label">
+              <span class="skp-file-btn">파일 선택</span>
+              <span class="skp-file-name" id="skp-file-name">파일을 선택해 주세요 (.xlsx, .xls)</span>
+            </label>
+          </div>
+          <div class="skp-field-error" id="skp-file-error"></div>
+        </div>
+
+        <!-- STEP 3 — 신청자 정보 -->
+        <div class="skp-step">
+          <div class="skp-step-label">STEP 3</div>
+          <div class="skp-step-title">신청자 정보 입력</div>
+
+          <div class="skp-field">
+            <label class="skp-field-label" for="skp-company">회사명 <span class="skp-required">*</span></label>
+            <input type="text" class="skp-field-input" id="skp-company" placeholder="회사명을 입력해 주세요" autocomplete="organization">
+            <div class="skp-field-error" id="skp-company-error"></div>
+          </div>
+
+          <div class="skp-field">
+            <label class="skp-field-label" for="skp-name">신청자 이름 <span class="skp-required">*</span></label>
+            <input type="text" class="skp-field-input" id="skp-name" placeholder="이름을 입력해 주세요" autocomplete="name">
+            <div class="skp-field-error" id="skp-name-error"></div>
+          </div>
+
+          <div class="skp-field">
+            <label class="skp-field-label" for="skp-email">이메일 <span class="skp-required">*</span></label>
+            <input type="email" class="skp-field-input" id="skp-email" placeholder="example@company.com" autocomplete="email">
+            <div class="skp-field-error" id="skp-email-error"></div>
+          </div>
+        </div>
+
+        <button type="button" class="skp-btn skp-btn-primary skp-btn-lg skp-submit-btn" id="skp-submit-btn" disabled>
+          신청하기
+        </button>
+      </div>
+
+      <!-- 신청 완료 화면 (성공 시 표시) -->
+      <div id="skp-modal-success-view" style="display: none;">
+        <div class="skp-success">
+          <div class="skp-success-icon" aria-hidden="true">✓</div>
+          <h2 class="skp-success-title">신청이 완료되었습니다</h2>
+          <p class="skp-success-desc">
+            담당자의 연락을 기다려 주세요.<br>
+            영업일 기준 1~2일 내에 연락드릴 예정입니다.
+          </p>
+          <button type="button" class="skp-btn skp-btn-primary" id="skp-success-close-btn">
+            확인
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <!-- ============================================
-  SCRIPTS — 모듈 분리, .skp-apply-btn 클릭 핸들러
-  (Phase 2에서 모달 열기로 교체 예정)
+  SCRIPTS — Phase 2: 신청 모달 (열기/닫기/검증)
+  Phase 3에서 제출 핸들러를 Slack 연동으로 교체 예정
 ============================================ -->
 <script>
 (function() {
   'use strict';
 
-  // 모든 신청 버튼에 임시 핸들러 연결 (Phase 2에서 모달 열기로 교체)
-  function bindApplyButtons() {
-    var buttons = document.querySelectorAll('.skp-apply-btn');
-    buttons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        console.info('[SKP] 신청 버튼 클릭 — 모달 구현 예정 (Phase 2)');
-        alert('신청 모달은 다음 단계(Phase 2)에서 구현됩니다.');
-      });
+  var CONFIG = window.SKP_CONFIG || {};
+  var MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  var ALLOWED_EXT = ['xlsx', 'xls'];
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // === DOM refs (init 시 셋업) ===
+  var dom = {};
+
+  // === 폼 상태 ===
+  var state = {
+    file: null,
+    company: '',
+    name: '',
+    email: '',
+    submitting: false
+  };
+
+  // === 검증 함수 ===
+  function validateFile(file) {
+    if (!file) return { ok: false, msg: '' };
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ALLOWED_EXT.indexOf(ext) === -1) {
+      return { ok: false, msg: '.xlsx 또는 .xls 파일만 업로드 가능합니다.' };
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return { ok: false, msg: '파일 크기는 10MB 이하여야 합니다.' };
+    }
+    return { ok: true, msg: '' };
+  }
+
+  function validateText(v) {
+    return (v || '').trim().length > 0;
+  }
+
+  function validateEmail(v) {
+    return EMAIL_RE.test((v || '').trim());
+  }
+
+  // === UI 업데이트 ===
+  function setFieldError(input, errEl, hasError, msg) {
+    if (hasError) {
+      input.classList.add('skp-has-error');
+      errEl.textContent = msg || '';
+    } else {
+      input.classList.remove('skp-has-error');
+      errEl.textContent = '';
+    }
+  }
+
+  function updateSubmitState() {
+    var fileResult = validateFile(state.file);
+    var allValid = fileResult.ok
+      && validateText(state.company)
+      && validateText(state.name)
+      && validateEmail(state.email);
+
+    dom.submitBtn.disabled = !allValid || state.submitting;
+  }
+
+  // === 입력 핸들러 ===
+  function onFileChange(e) {
+    var file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    state.file = file;
+
+    if (!file) {
+      dom.fileName.textContent = '파일을 선택해 주세요 (.xlsx, .xls)';
+      dom.fileLabel.classList.remove('skp-file-selected', 'skp-has-error');
+      dom.fileError.textContent = '';
+      updateSubmitState();
+      return;
+    }
+
+    var result = validateFile(file);
+    dom.fileName.textContent = file.name;
+
+    if (result.ok) {
+      dom.fileLabel.classList.add('skp-file-selected');
+      dom.fileLabel.classList.remove('skp-has-error');
+      dom.fileError.textContent = '';
+    } else {
+      dom.fileLabel.classList.remove('skp-file-selected');
+      dom.fileLabel.classList.add('skp-has-error');
+      dom.fileError.textContent = result.msg;
+    }
+
+    updateSubmitState();
+  }
+
+  function onCompanyInput(e) {
+    state.company = e.target.value;
+    var valid = validateText(state.company);
+    // blur나 입력 후 비어있을 때만 에러 표시
+    if (!valid && state.company.length > 0) {
+      // 입력 중에는 너무 까다롭지 않게 — 공백만 있을 때만 표시
+      setFieldError(dom.companyInput, dom.companyError, true, '회사명을 입력해 주세요.');
+    } else {
+      setFieldError(dom.companyInput, dom.companyError, false);
+    }
+    updateSubmitState();
+  }
+
+  function onNameInput(e) {
+    state.name = e.target.value;
+    var valid = validateText(state.name);
+    if (!valid && state.name.length > 0) {
+      setFieldError(dom.nameInput, dom.nameError, true, '이름을 입력해 주세요.');
+    } else {
+      setFieldError(dom.nameInput, dom.nameError, false);
+    }
+    updateSubmitState();
+  }
+
+  function onEmailInput(e) {
+    state.email = e.target.value;
+    var hasInput = state.email.length > 0;
+    var valid = validateEmail(state.email);
+    if (hasInput && !valid) {
+      setFieldError(dom.emailInput, dom.emailError, true, '올바른 이메일 형식이 아닙니다.');
+    } else {
+      setFieldError(dom.emailInput, dom.emailError, false);
+    }
+    updateSubmitState();
+  }
+
+  // === 모달 열기/닫기 ===
+  function openModal() {
+    dom.modal.classList.add('skp-modal-open');
+    dom.modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('skp-modal-active');
+
+    // 다운로드 링크 갱신
+    if (CONFIG.SAMPLE_XLSX_URL && CONFIG.SAMPLE_XLSX_URL.indexOf('<') !== 0) {
+      dom.downloadLink.setAttribute('href', CONFIG.SAMPLE_XLSX_URL);
+      dom.downloadLink.removeAttribute('aria-disabled');
+    } else {
+      // placeholder 상태 — 클릭 시 안내
+      dom.downloadLink.setAttribute('href', '#');
+      dom.downloadLink.setAttribute('aria-disabled', 'true');
+    }
+
+    // 폼 뷰 표시, 성공 뷰 숨김
+    dom.formView.style.display = '';
+    dom.successView.style.display = 'none';
+
+    // 첫 입력 필드에 포커스 (모바일에서 키보드 자동 노출 방지 위해 약간 딜레이)
+    setTimeout(function() {
+      // 회사명에 먼저 포커스
+      if (dom.companyInput) dom.companyInput.focus();
+    }, 100);
+
+    console.info('[SKP] 모달 오픈');
+  }
+
+  function closeModal() {
+    dom.modal.classList.remove('skp-modal-open');
+    dom.modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('skp-modal-active');
+    console.info('[SKP] 모달 닫힘');
+  }
+
+  function resetForm() {
+    state.file = null;
+    state.company = '';
+    state.name = '';
+    state.email = '';
+    state.submitting = false;
+
+    dom.fileInput.value = '';
+    dom.companyInput.value = '';
+    dom.nameInput.value = '';
+    dom.emailInput.value = '';
+
+    dom.fileName.textContent = '파일을 선택해 주세요 (.xlsx, .xls)';
+    dom.fileLabel.classList.remove('skp-file-selected', 'skp-has-error');
+
+    [dom.fileError, dom.companyError, dom.nameError, dom.emailError].forEach(function(el) {
+      if (el) el.textContent = '';
     });
-    console.info('[SKP] 신청 버튼 ' + buttons.length + '개 바인딩 완료');
+    [dom.companyInput, dom.nameInput, dom.emailInput].forEach(function(el) {
+      if (el) el.classList.remove('skp-has-error');
+    });
+
+    dom.submitBtn.disabled = true;
+    dom.submitBtn.textContent = '신청하기';
+  }
+
+  // === 제출 (Phase 3에서 Slack 연동으로 교체) ===
+  function onSubmit() {
+    if (state.submitting) return;
+
+    // 최종 검증
+    var fileResult = validateFile(state.file);
+    if (!fileResult.ok || !validateText(state.company) || !validateText(state.name) || !validateEmail(state.email)) {
+      console.warn('[SKP] 제출 거부 — 검증 실패');
+      return;
+    }
+
+    state.submitting = true;
+    dom.submitBtn.disabled = true;
+    dom.submitBtn.textContent = '전송 중...';
+
+    // Phase 3에서 실제 Slack API 호출로 교체
+    console.info('[SKP] 제출 데이터 (Phase 2 mock):', {
+      file: state.file ? { name: state.file.name, size: state.file.size } : null,
+      company: state.company.trim(),
+      name: state.name.trim(),
+      email: state.email.trim(),
+      submitted_at: new Date().toISOString()
+    });
+
+    // mock 딜레이 후 성공 화면
+    setTimeout(function() {
+      dom.formView.style.display = 'none';
+      dom.successView.style.display = '';
+      state.submitting = false;
+    }, 600);
+  }
+
+  function onSuccessClose() {
+    closeModal();
+    // 닫힌 뒤 폼 초기화 (다음 오픈 시 깨끗한 상태)
+    setTimeout(resetForm, 200);
+  }
+
+  // === 다운로드 링크 (placeholder 상태 안내) ===
+  function onDownloadClick(e) {
+    if (dom.downloadLink.getAttribute('aria-disabled') === 'true') {
+      e.preventDefault();
+      alert('신청 양식 파일은 곧 제공 예정입니다. 담당자에게 직접 문의해 주세요.');
+      return;
+    }
+    // 정상 URL이면 기본 다운로드 동작 진행
+  }
+
+  // === 키보드 / 외부 클릭 ===
+  function onKeyDown(e) {
+    if (e.key === 'Escape' && dom.modal.classList.contains('skp-modal-open')) {
+      // 제출 중이면 닫기 차단
+      if (state.submitting) return;
+      closeModal();
+    }
+  }
+
+  function onOverlayClick(e) {
+    // 오버레이 자체 클릭만 (내용 클릭 시 닫히면 안 됨)
+    if (e.target === dom.modal) {
+      if (state.submitting) return;
+      closeModal();
+    }
+  }
+
+  // === 초기화 ===
+  function init() {
+    // DOM refs
+    dom.modal = document.getElementById('skp-modal');
+    if (!dom.modal) {
+      console.error('[SKP] 모달 DOM을 찾을 수 없습니다.');
+      return;
+    }
+
+    dom.formView = document.getElementById('skp-modal-form-view');
+    dom.successView = document.getElementById('skp-modal-success-view');
+    dom.closeBtn = document.getElementById('skp-modal-close-btn');
+    dom.successCloseBtn = document.getElementById('skp-success-close-btn');
+    dom.downloadLink = document.getElementById('skp-download-link');
+    dom.fileInput = document.getElementById('skp-file');
+    dom.fileLabel = document.getElementById('skp-file-label');
+    dom.fileName = document.getElementById('skp-file-name');
+    dom.fileError = document.getElementById('skp-file-error');
+    dom.companyInput = document.getElementById('skp-company');
+    dom.companyError = document.getElementById('skp-company-error');
+    dom.nameInput = document.getElementById('skp-name');
+    dom.nameError = document.getElementById('skp-name-error');
+    dom.emailInput = document.getElementById('skp-email');
+    dom.emailError = document.getElementById('skp-email-error');
+    dom.submitBtn = document.getElementById('skp-submit-btn');
+
+    // 신청 버튼 (페이지 내 모든 위치) → 모달 열기
+    var applyBtns = document.querySelectorAll('.skp-apply-btn');
+    applyBtns.forEach(function(btn) {
+      btn.addEventListener('click', openModal);
+    });
+
+    // 모달 닫기
+    dom.closeBtn.addEventListener('click', closeModal);
+    dom.successCloseBtn.addEventListener('click', onSuccessClose);
+    dom.modal.addEventListener('click', onOverlayClick);
+    document.addEventListener('keydown', onKeyDown);
+
+    // 다운로드 링크
+    dom.downloadLink.addEventListener('click', onDownloadClick);
+
+    // 입력 바인딩
+    dom.fileInput.addEventListener('change', onFileChange);
+    dom.companyInput.addEventListener('input', onCompanyInput);
+    dom.nameInput.addEventListener('input', onNameInput);
+    dom.emailInput.addEventListener('input', onEmailInput);
+
+    // 제출
+    dom.submitBtn.addEventListener('click', onSubmit);
+
+    // 외부 디버깅 핸들
+    window.SKP = {
+      openModal: openModal,
+      closeModal: closeModal,
+      resetForm: resetForm,
+      getState: function() { return Object.assign({}, state); }
+    };
+
+    console.info('[SKP] 초기화 완료 — 신청 버튼 ' + applyBtns.length + '개 바인딩');
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindApplyButtons);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    bindApplyButtons();
+    init();
   }
 })();
 </script>
