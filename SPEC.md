@@ -336,126 +336,55 @@ Slack Incoming Webhook은 파일 전송이 불가하므로, **Slack Web API `fil
 
 ## 6. 외부 서비스 통합 가이드
 
-### 6.1 Slack 통합 (메시지 + 파일)
+### 6.1 아키텍처 — Google Apps Script 프록시 + Drive + Slack
 
-이 프로젝트는 슬랙 알림만 사용한다. 두 가지 Slack 인터페이스를 조합해서 사용:
+> 📌 **중요 — 2026-05-18 변경 사항**: 브라우저에서 Slack Web API를 직접 호출하면 **CORS 정책**에 의해 차단됨이 실 배포 단계에서 확인되었음 (`Authorization` 헤더가 preflight에 허용되지 않음). **Google Apps Script Web App을 프록시로 도입**하고, 파일은 **Slack 대신 운영자 Google Drive에 저장** + 다운로드 URL을 Slack 메시지에 포함하는 방식으로 변경.
 
-| 인터페이스 | 용도 | 인증 |
-|-----------|------|------|
-| **Incoming Webhook** | 알림 메시지 전송 (Block Kit / text) | 발급된 webhook URL (이미 보유) |
-| **Web API `files.uploadV2`** | 신청서 파일 업로드 | Bot Token (`xoxb-...`) 신규 발급 필요 |
-
-#### 운영자 셋업 절차 (Slack App + Bot Token, 약 10분)
-
-**Step 1 — Slack App 생성**
-1. https://api.slack.com/apps → "Create New App" → "From scratch"
-2. App Name: `중소기업인재키움프리미엄 알림봇` (자유)
-3. Workspace 선택 → Create
-
-**Step 2 — Bot Token Scopes 추가**
-1. 좌측 메뉴 → **OAuth & Permissions**
-2. "Scopes" 섹션 → **Bot Token Scopes**에 다음 추가:
-   - `files:write` — 파일 업로드용 (필수)
-   - `chat:write` — 메시지 전송용 (선택, Incoming Webhook을 그대로 쓰면 불필요)
-
-**Step 3 — Install to Workspace**
-1. 같은 페이지 상단 "Install to Workspace" 클릭
-2. 권한 승인
-3. 발급된 **Bot User OAuth Token** (`xoxb-...`로 시작) 복사
-
-**Step 4 — 알림 채널에 봇 초대**
-1. 알림용 슬랙 채널로 이동
-2. `/invite @중소기업인재키움프리미엄알림봇` 실행 (봇이 채널 멤버여야 파일 업로드 가능)
-
-**Step 5 — 채널 ID 확인**
-1. 채널 우클릭 → "View channel details" → 하단에 Channel ID (`C0XXXXXXXX`) 확인
-2. 또는 채널 URL의 마지막 토큰
-
-**Step 6 — 개발자에게 전달할 값**
-| 항목 | 예시 | 비고 |
-|------|------|------|
-| Bot Token | `xoxb-...` | OAuth & Permissions 페이지 |
-| 채널 ID | `C0XXXXXXXX` | 파일 업로드 대상 채널 |
-| Webhook URL | (이미 보유) | `https://hooks.slack.com/services/.../...` |
-
-#### CORS 주의
-Slack Web API(`slack.com/api/*`)는 **브라우저에서의 직접 호출에 대해 CORS를 허용**한다 (2020년 이후). `Content-Type` 헤더로 `application/x-www-form-urlencoded` 또는 `multipart/form-data`를 쓰면 preflight 없이 통과.
-
-Incoming Webhook(`hooks.slack.com/*`)은 `Content-Type` 헤더를 일부러 추가하지 않아야 CORS preflight를 우회한다 (브라우저가 simple request로 처리).
-
-#### 코드 통합 예시
-
-```javascript
-// 1) 파일 업로드 — files.getUploadURLExternal
-async function uploadFileToSlack(file) {
-  // (a) 업로드용 임시 URL 발급
-  const initRes = await fetch('https://slack.com/api/files.getUploadURLExternal', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Bearer ${SKP_CONFIG.SLACK_BOT_TOKEN}`
-    },
-    body: new URLSearchParams({
-      filename: file.name,
-      length: String(file.size)
-    })
-  }).then(r => r.json());
-
-  if (!initRes.ok) throw new Error('Slack init failed: ' + initRes.error);
-
-  // (b) 발급된 URL로 파일 PUT
-  await fetch(initRes.upload_url, { method: 'POST', body: file });
-
-  // (c) 업로드 완료 처리 + 채널 게시
-  const completeRes = await fetch('https://slack.com/api/files.completeUploadExternal', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Authorization': `Bearer ${SKP_CONFIG.SLACK_BOT_TOKEN}`
-    },
-    body: JSON.stringify({
-      files: [{ id: initRes.file_id, title: file.name }],
-      channel_id: SKP_CONFIG.SLACK_CHANNEL_ID
-    })
-  }).then(r => r.json());
-
-  if (!completeRes.ok) throw new Error('Slack complete failed: ' + completeRes.error);
-
-  return completeRes.files[0].permalink;   // 메시지에 넣을 링크
-}
-
-// 2) 메시지 전송 — Incoming Webhook
-async function postSlackMessage(blocks) {
-  await fetch(SKP_CONFIG.SLACK_WEBHOOK_URL, {
-    method: 'POST',
-    // 주의: Content-Type 헤더 추가 안 함 (CORS preflight 회피)
-    body: JSON.stringify({ blocks })
-  });
-}
-
-// 3) 통합 흐름
-async function submitApplication(form, file) {
-  const permalink = await uploadFileToSlack(file);
-  const blocks = buildSlackBlocks(form, file, permalink);
-  await postSlackMessage(blocks);
-}
+```
+브라우저 (인플런 페이지)
+   ↓ POST { formData, file(base64), mentionIds, adminEmails }
+   ↓ Content-Type: text/plain  (CORS preflight 회피)
+Google Apps Script Web App (script.google.com/macros/s/.../exec)
+   ↓ 운영자 권한으로 동작 (배포 시 "실행: 나")
+   ├─ base64 → Blob 변환
+   ├─ DriveApp.getFolderById(FOLDER_ID).createFile(blob)
+   ├─ "링크 있는 누구나 보기" 권한 부여
+   ├─ 직접 다운로드 URL 생성: https://drive.google.com/uc?export=download&id=FILE_ID
+   ↓ Block Kit 메시지 빌드 (Drive URL 포함)
+   ↓ Slack Incoming Webhook POST
+Slack 채널
+   → 담당자가 메시지의 다운로드 URL 클릭 시 즉시 파일 다운로드
 ```
 
-#### 파일 크기 한계
-- Slack 일반 워크스페이스의 파일 업로드 한도: **개별 파일 1GB**, 워크스페이스 총 용량은 플랜에 따라 다름 (Free: 5GB)
-- 신청서 .xlsx는 일반적으로 수 백 KB ~ 수 MB 수준이므로 충분
-- 클라이언트 UX 차원에서 **10MB 상한**을 두는 것을 권장 (잘못된 파일 업로드 방지)
+| 컴포넌트 | 역할 | 코드 위치 |
+|---------|------|---------|
+| 브라우저 (`index.html`) | 폼·UI·base64 인코딩 후 Apps Script 호출 | `submitToProxy()` |
+| Apps Script (`apps-script.gs`) | Drive 파일 저장 + Block Kit 빌드 + Slack Webhook | 동일 저장소 |
+| Google Drive | 신청서 파일 영구 보관 (운영자 소유) | — |
+| Slack | 알림 채널 (메시지 + 다운로드 링크) | 워크스페이스 |
 
-#### 운영 주의사항 (보안)
-- ⚠️ **Bot Token이 코드에 노출됨**: 위 코드 그대로 배포하면 누구나 토큰을 추출해 워크스페이스에 메시지/파일 전송 가능
-  - **완화**: 봇 스코프를 `files:write` 하나로 최소화 → 도용돼도 피해 범위가 "임의 파일 업로드"로 제한
-  - **완화**: 알림 채널을 다른 채널과 격리 → 도용 시 해당 채널만 영향
-  - **완화**: 도용 의심 시 https://api.slack.com/apps 에서 즉시 토큰 revoke + 재발급
-- 더 강한 보안이 필요하면 서버리스 프록시(예: Cloudflare Worker) 도입 검토 — 그러나 현 "HTML/JS만" 제약과 충돌
+#### 왜 Cloudflare Worker가 아닌 Apps Script인가
+- 운영자가 Google 계정을 이미 보유 → 별도 가입 불필요
+- 파일이 운영자 Drive에 영구 보관 → Slack 무료 플랜 파일 보관 한계 회피
+- Slack Bot Token 발급/관리 불필요 (Webhook URL만 사용)
+- Drive 사용량 무료 15GB → 신청서 양식 기준 1,500건 이상 처리 가능
+
+배포 절차는 [APPS_SCRIPT_SETUP.md](APPS_SCRIPT_SETUP.md) 참고.
+
+#### 파일 크기 한계
+- 운영자 Google Drive 무료 15GB까지 누적 가능
+- Apps Script POST payload 한계 ~50MB → base64 인코딩 고려 실효 ~37MB
+- 클라이언트 UX 차원에서 **10MB 상한** 적용 (`index.html`의 validateFile)
+
+#### CORS 우회 방식
+- 브라우저 → Apps Script POST 시 `Content-Type: text/plain;charset=utf-8` 사용
+- 일반적인 application/json은 preflight를 발생시키지만 text/plain은 simple request로 처리됨
+- 본문은 그래도 JSON 문자열을 그대로 보내고, Apps Script에서 `JSON.parse(e.postData.contents)`
 
 #### 폴백 시나리오
-- `files.uploadV2`가 실패해도 메시지(Webhook)는 보낼 수 있도록 try/catch 분리
-- 파일 업로드 실패 시 메시지에 `⚠️ 파일 업로드 실패 — 신청자에게 직접 문의 필요` 표시
+- Drive 업로드가 실패해도 Slack 메시지(Webhook)는 보냄 (try/catch 분리)
+- 파일 업로드 실패 시 메시지에 `⚠️ 파일 업로드 실패 — 신청자에게 직접 문의 필요` + 오류 메시지 표시
+- Slack Webhook까지 실패하면 클라이언트에 에러 응답 → 모달에 에러 배너 표시 + 재시도 가능
 
 ---
 
@@ -489,14 +418,21 @@ async function submitApplication(form, file) {
 - [ ] 성공/실패 UI 분기 처리
 
 ### Phase 4 — 마감/QA (반나절)
-- [ ] **sample.xlsx 실제 호스팅 URL 교체** (운영자가 업로드 후 전달한 URL을 `SAMPLE_XLSX_URL`에 반영)
-- [ ] 반응형 (모바일/태블릿/데스크탑) 점검
-- [ ] TinyMCE에 실제 붙여넣고 동작 확인
-- [ ] 슬랙 메시지/파일 실제 수신 확인 (테스트 채널에서 1회 전송)
-- [ ] 대용량 파일(10MB 근접)/잘못된 확장자/한글 파일명 등 엣지 케이스
-- [ ] CORS 동작 확인 (실제 인플런 도메인에 임베드 후 호출 성공 여부)
-- [ ] 접근성 기본 (label 연결, 키보드 포커스, ESC 처리)
+
+**개발 측 작업 (코드)** — Phase 4 코드 마무리:
+- [x] sample.xlsx URL 실제 값 반영 (Phase 3 마무리 단계에서 처리)
+- [x] Slack mrkdwn 이스케이프 (사용자 입력 안전 처리)
+- [x] 접근성 보강 (focus trap, 이전 포커스 복귀, `aria-busy`)
+- [x] 배포용 사본 차단 (`.gitignore`에 `*.deploy.html` 추가)
+- [x] 운영자 배포 가이드 작성 → [DEPLOY.md](DEPLOY.md)
+
+**운영자 측 작업 (수동 검증)** — [DEPLOY.md §3](DEPLOY.md) 체크리스트로 진행:
+- [ ] `index.deploy.html` 사본 생성 + 시크릿 2개 치환
+- [ ] 브라우저에서 모달 동작·반응형·다운로드·검증 점검
+- [ ] 테스트 채널에서 실제 신청 1회 → 슬랙 메시지·첨부파일 수신 확인
+- [ ] TinyMCE에 붙여넣고 미리보기/실제 페이지 동작 확인
 - [ ] 콘솔 에러/경고 0건 확인
+- [ ] 배포 후 24시간 모니터링
 
 ---
 
@@ -512,47 +448,49 @@ async function submitApplication(form, file) {
 ```html
 <!-- ============================================
   CONFIG — 운영자 수정 영역
-  발급/변경 시 아래 값만 갱신하면 동작합니다.
+  🔴 시크릿은 secrets.local.md, 🟢 공개 설정은 코드 직접
 ============================================ -->
 <script>
 window.SKP_CONFIG = {
-  // Slack Incoming Webhook (메시지) — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
+  // 🔴 SLACK 시크릿 — placeholder 유지, Phase 4에서 secrets.local.md 값으로 치환
   SLACK_WEBHOOK_URL: "<REPLACE_WITH_WEBHOOK_URL>",
-
-  // Slack Bot Token (파일 업로드) — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
   SLACK_BOT_TOKEN: "<REPLACE_WITH_BOT_TOKEN>",
 
-  // 파일 업로드 대상 채널 ID — ✅ 발급 완료, 실제 값은 secrets.local.md 참고
-  SLACK_CHANNEL_ID: "<REPLACE_WITH_CHANNEL_ID>",
+  // 🟢 공개 설정 — 코드 직접 (시크릿 아님)
+  SLACK_CHANNEL_ID: "C0B3KA9VBFZ",
 
-  // 담당자 이메일 (메시지 본문 표시용, 발송용 아님) — ✅ 확정 (3명)
+  SAMPLE_XLSX_URL: "https://cdn.inflab.com/b2g/...xlsx",
+
   ADMIN_EMAILS: [
     "ariel@inflab.com",
     "shhwang@inflab.com",
     "hj.kim@inflab.com"
   ],
 
-  // 담당자 Slack Member ID (메시지 첫 줄 멘션용) — ✅ 확정
   SLACK_MENTION_USER_IDS: [
     "U056J4GK86M",  // ariel@inflab.com
     "U03AWSR2BD0",  // shhwang@inflab.com
     "U0ADQHJSYNA"   // hj.kim@inflab.com
-  ],
-
-  // 양식 파일 호스팅 URL — ⏳ 운영자 업로드 후 입력
-  SAMPLE_XLSX_URL: ""
+  ]
 };
 </script>
 ```
 
 ### 8.2 시크릿 관리 정책
 
-이 저장소는 **GitHub Public 저장소 + Secret Scanning Push Protection 활성화** 상태이므로, 실제 시크릿(웹훅 URL, Bot Token 등)을 SPEC.md/index.html 등 git 추적 파일에 직접 적으면 push가 차단된다.
+이 저장소는 **GitHub Public 저장소 + Secret Scanning Push Protection 활성화** 상태이므로, 진짜 시크릿을 git 추적 파일에 직접 적으면 push가 차단된다. 다만 모든 외부 값이 시크릿은 아니므로 두 그룹으로 나눠서 관리한다.
+
+#### 두 그룹 분류
+
+| 그룹 | 항목 | 노출 시 위험 | 저장 위치 |
+|------|------|-------------|----------|
+| 🔴 **진짜 시크릿** | `SLACK_WEBHOOK_URL`, `SLACK_BOT_TOKEN` | 도용 시 채널 스팸·임의 파일 업로드 가능 | `secrets.local.md` (gitignore), 코드에는 placeholder |
+| 🟢 **공개 가능 설정** | `SLACK_CHANNEL_ID`, `SAMPLE_XLSX_URL`, `ADMIN_EMAILS`, `SLACK_MENTION_USER_IDS` | 단독으로는 쓸 수 없음 (Bot Token 없으면 무의미) | 코드(index.html)에 직접 |
 
 #### 규칙
-1. **git 추적 파일에는 placeholder만 작성** — 예: `"<REPLACE_WITH_WEBHOOK_URL>"`, `"xoxb-***"`
-2. **실제 값은 `secrets.local.md`에 보관** — 이 파일은 `.gitignore`로 추적 제외
-3. 최종 배포할 `index.html`에 실제 값을 박을 때는 **로컬에서만 치환**해서 TinyMCE에 붙여넣기 (저장소에는 placeholder 버전을 커밋)
+1. **🔴 진짜 시크릿**: git 추적 파일(SPEC.md/index.html)에는 `"<REPLACE_WITH_*>"` placeholder만. 실제 값은 `secrets.local.md`에 단일 보관.
+2. **🟢 공개 가능 설정**: index.html CONFIG 블록에 실제 값 직접 입력. 개발 중 즉시 테스트 가능.
+3. 최종 배포 시(Phase 4): `index.html`의 🔴 placeholder만 secrets.local.md 값으로 로컬 치환 → TinyMCE에 붙여넣기. **저장소엔 placeholder 버전 commit**.
 4. 시크릿이 실수로 commit된 경우:
    - push 전이라면 `git commit --amend` 또는 `git reset --soft HEAD~1`로 수정
    - push 후라면 **즉시 해당 시크릿을 revoke + 재발급** (history rewrite로는 완전히 못 지움)
@@ -561,13 +499,9 @@ window.SKP_CONFIG = {
 ```markdown
 # 로컬 시크릿 (Git 추적 제외)
 
-## Slack
+## Slack (진짜 시크릿)
 - Webhook URL: https://hooks.slack.com/services/.../.../...
 - Bot Token: xoxb-...
-- 채널 ID: C0XXXXXXXX
-
-## sample.xlsx
-- 호스팅 URL: https://.../sample.xlsx
 ```
 
 #### `.gitignore` 필수 항목

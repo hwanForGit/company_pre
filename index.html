@@ -15,16 +15,14 @@
 ============================================ -->
 <script>
 window.SKP_CONFIG = {
-  // Slack Incoming Webhook (메시지) — 실제 값은 secrets.local.md 참고
-  SLACK_WEBHOOK_URL: "<REPLACE_WITH_WEBHOOK_URL>",
+  // Google Apps Script Web App URL — Drive 저장 + Slack Webhook 프록시
+  // 실제 Slack Webhook URL은 Apps Script의 Script Properties에 보관됨
+  SKP_APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxuRYCydFkxZAlokdSwzddQjl0yaIsGF0NsTiGuWqegp7zfAPEKrajpqOt2MeaeEnT4TQ/exec",
 
-  // Slack Bot Token (파일 업로드) — 실제 값은 secrets.local.md 참고
-  SLACK_BOT_TOKEN: "<REPLACE_WITH_BOT_TOKEN>",
+  // 양식 파일 호스팅 URL (공개 CDN)
+  SAMPLE_XLSX_URL: "https://cdn.inflab.com/b2g/%ED%9B%88%EB%A0%A8%EC%83%9D%20%EC%97%91%EC%85%80%20%EC%97%85%EB%A1%9C%EB%93%9C%20%EC%96%91%EC%8B%9D(%EC%88%98%EC%A0%95%20-%20%ED%95%84%EC%88%98%EA%B8%B0%EC%9E%AC%20%EB%B0%8F%20%EC%9E%85%EB%A0%A5%EA%B0%92%20%EC%B6%94%EA%B0%80).xlsx",
 
-  // 파일 업로드 대상 채널 ID — 실제 값은 secrets.local.md 참고
-  SLACK_CHANNEL_ID: "<REPLACE_WITH_CHANNEL_ID>",
-
-  // 담당자 이메일 (메시지 본문 표시용, 3명)
+  // 담당자 이메일 (메시지 본문 푸터에 표시용)
   ADMIN_EMAILS: [
     "ariel@inflab.com",
     "shhwang@inflab.com",
@@ -38,11 +36,8 @@ window.SKP_CONFIG = {
     "U0ADQHJSYNA"   // hj.kim@inflab.com
   ],
 
-  // 양식 파일 호스팅 URL — 프로젝트 마무리 단계에 실제 URL로 교체
-  SAMPLE_XLSX_URL: "<REPLACE_WITH_SAMPLE_XLSX_URL>",
-
-  // 우선지원 대상 기업 신청 링크
-  GOV_PRIORITY_CHECK_URL: "https://www.gov.kr/mw/AA020InfoCappView.do?HighCtgCD=A05007&CappBizCD=14900000031&tp_seq="
+  // 우선지원 대상 기업 확인 링크 (한경 ITcampus)
+  GOV_PRIORITY_CHECK_URL: "https://itcampus.hankyung.com/promotion/20260213-b33ea1/imz/subpage.html"
 };
 </script>
 
@@ -730,6 +725,18 @@ window.SKP_CONFIG = {
   margin-top: 20px;
 }
 
+/* 제출 에러 메시지 */
+.skp-submit-error {
+  background: rgba(250, 82, 82, 0.08);
+  border: 1px solid rgba(250, 82, 82, 0.3);
+  color: #e03131;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-top: 16px;
+  line-height: 1.55;
+}
+
 /* 완료 화면 */
 .skp-success {
   text-align: center;
@@ -767,6 +774,255 @@ window.SKP_CONFIG = {
 /* body 스크롤 잠금 (모달 열림 시) */
 body.skp-modal-active {
   overflow: hidden;
+}
+
+/* ============================================
+  지원 강의 소개 (course.html에서 그대로 이식)
+  .infl-* prefix로 격리 — .skp-root 외부의 .infl-root 안에서 동작
+============================================ */
+.infl-root {
+  --green-50: #e0fae5;
+  --green-light: #dbffe8;
+  --ink: #1c332b;
+  --ink-soft: #5c786b;
+
+  font-family: Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.infl-root *,
+.infl-root *::before,
+.infl-root *::after { box-sizing: border-box; }
+
+/* reveal 애니메이션 */
+.infl-root .infl-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .7s cubic-bezier(.2, .7, .2, 1);
+  will-change: opacity, transform;
+}
+.infl-root .infl-reveal.infl-is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.infl-root .infl-reveal.infl-delay-1 { transition-delay: .08s; }
+.infl-root .infl-reveal.infl-delay-2 { transition-delay: .16s; }
+.infl-root .infl-reveal.infl-delay-3 { transition-delay: .24s; }
+.infl-root .infl-reveal.infl-delay-4 { transition-delay: .32s; }
+.infl-root .infl-reveal.infl-delay-5 { transition-delay: .40s; }
+@media (prefers-reduced-motion: reduce) {
+  .infl-root .infl-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* common */
+.infl-root .infl-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-50);
+  color: #00bd5e;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+.infl-root .infl-section-title {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* courses */
+.infl-root .infl-courses {
+  background: #fff;
+  padding: 72px 20px 90px;
+}
+.infl-root .infl-courses-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.infl-root .infl-courses h2 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+.infl-root .infl-courses-desc {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.infl-root .infl-course-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.infl-root .infl-course {
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform .3s cubic-bezier(.2, .7, .2, 1), box-shadow .3s cubic-bezier(.2, .7, .2, 1);
+}
+.infl-root .infl-course:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .infl-root .infl-course,
+  .infl-root .infl-course:hover {
+    transition: none;
+    transform: none;
+    box-shadow: none;
+  }
+}
+.infl-root .infl-course-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.infl-root .infl-course-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s cubic-bezier(.2, .7, .2, 1);
+}
+.infl-root .infl-course:hover .infl-course-img img {
+  transform: scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .infl-root .infl-course:hover .infl-course-img img { transform: none; }
+}
+.infl-root .infl-course-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.infl-root .infl-course-content {
+  padding: 18px 20px 16px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.infl-root .infl-course-title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.infl-root .infl-course-desc {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: .85;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+.infl-root .infl-course-cta,
+.infl-root a.infl-course-cta,
+.infl-root a.infl-course-cta:hover,
+.infl-root a.infl-course-cta:visited,
+.infl-root a.infl-course-cta:active,
+.infl-root a.infl-course-cta:focus {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+.infl-root .infl-course-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.2px;
+  transition: background-color .2s ease;
+  flex-shrink: 0;
+}
+.infl-root .infl-course-cta .infl-arrow {
+  display: inline-block;
+  transition: transform .25s ease;
+}
+.infl-root .infl-course-cta:hover .infl-arrow {
+  transform: translateX(4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .infl-root .infl-course-cta,
+  .infl-root .infl-course-cta .infl-arrow { transition: none; }
+  .infl-root .infl-course-cta:hover .infl-arrow { transform: none; }
+}
+
+/* 색상 매핑 */
+.infl-root .infl-course.infl-c-orange .infl-course-body  { background: #ff5c21; }
+.infl-root .infl-course.infl-c-orange .infl-course-cta   { background: #c93e10; }
+.infl-root .infl-course.infl-c-orange .infl-course-cta:hover { background: #a83208; }
+.infl-root .infl-course.infl-c-blue .infl-course-body    { background: #206bc7; }
+.infl-root .infl-course.infl-c-blue .infl-course-cta     { background: #154f9a; }
+.infl-root .infl-course.infl-c-blue .infl-course-cta:hover { background: #0e3870; }
+.infl-root .infl-course.infl-c-pink .infl-course-body    { background: #e93c8d; }
+.infl-root .infl-course.infl-c-pink .infl-course-cta     { background: #b82468; }
+.infl-root .infl-course.infl-c-pink .infl-course-cta:hover { background: #8e1750; }
+.infl-root .infl-course.infl-c-purple .infl-course-body  { background: #701fd4; }
+.infl-root .infl-course.infl-c-purple .infl-course-cta   { background: #4e10a0; }
+.infl-root .infl-course.infl-c-purple .infl-course-cta:hover { background: #380a78; }
+.infl-root .infl-course.infl-c-green .infl-course-body   { background: #00bd5e; }
+.infl-root .infl-course.infl-c-green .infl-course-cta    { background: #008c43; }
+.infl-root .infl-course.infl-c-green .infl-course-cta:hover { background: #006030; }
+.infl-root .infl-course.infl-c-teal .infl-course-body    { background: #0e9a92; }
+.infl-root .infl-course.infl-c-teal .infl-course-cta     { background: #097370; }
+.infl-root .infl-course.infl-c-teal .infl-course-cta:hover { background: #055250; }
+.infl-root .infl-course.infl-c-red .infl-course-body     { background: #d83a3a; }
+.infl-root .infl-course.infl-c-red .infl-course-cta      { background: #a82828; }
+.infl-root .infl-course.infl-c-red .infl-course-cta:hover { background: #7e1c1c; }
+
+@media (min-width: 900px) {
+  .infl-root .infl-courses { padding: 100px 32px 120px; }
+  .infl-root .infl-courses-inner { max-width: 100%; }
+  .infl-root .infl-courses h2 { font-size: 40px; }
+  .infl-root .infl-courses-desc { font-size: 18px; }
+  .infl-root .infl-course-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 16px;
+    width: 100%;
+  }
+  .infl-root .infl-course-title { font-size: 17px; }
+  .infl-root .infl-course-desc { font-size: 12.5px; }
+}
+@media (min-width: 1200px) {
+  .infl-root .infl-course-grid { grid-template-columns: repeat(4, 1fr); }
+  .infl-root .infl-course-title { font-size: 18px; }
+  .infl-root .infl-course-content { padding: 20px 22px 16px; }
+  .infl-root .infl-course-cta {
+    padding: 14px 22px;
+    font-size: 13px;
+  }
 }
 </style>
 </head>
@@ -901,33 +1157,116 @@ body.skp-modal-active {
 
       <div class="skp-encourage">
         <p class="skp-encourage-text">
-          이제 업무에 AI를 얼마나 잘 활용하느냐가 생존의 열쇠입니다.<br>
-          같이 힘을 내요! 💪🏼 인프런이 도와줌!!
+          실무에 바로 적용되는 AI 역량, 기업 경쟁력의 새로운 기준입니다.<br>
+          인프런이 그 변화를 함께 만들어 가겠습니다.
         </p>
       </div>
     </div>
   </section>
 
+  <!-- ===== 지원 강의 소개 섹션 (course.html에서 이식, .infl-root 격리) ===== -->
+  <div class="infl-root">
+    <div class="infl-courses">
+      <div class="infl-courses-inner">
+        <span class="infl-badge infl-reveal">교육 과정</span>
+        <h2 class="infl-section-title infl-reveal infl-delay-1">지원 강의 소개</h2>
+        <p class="infl-courses-desc infl-reveal infl-delay-2">실무에 바로 쓰는 AI 역량, 핵심만 담은 라이브 과정입니다.</p>
+        <div class="infl-course-grid" id="course-list">
+          <div class="infl-course infl-c-orange" data-course-id="341933">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/files/courses/341933/cover/01kpt4nmwy5qanpjm3bdr0q7fz" /></div>
+            <div class="infl-course-body" style="background-color: #ff5c21;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] Claude Code로 나만의 웹앱 만들기 (바이브코딩)</div>
+                <p class="infl-course-desc">중소기업 실무자(비개발자)가 Claude Code로 웹앱을 직접 제작하고, GitHub Pages로 배포하여 실제 서비스로 공유할 수 있다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #c93e10;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-claude-work-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-blue" data-course-id="341932">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/files/courses/341932/cover/01kpt49efj3hd1z84jwd3aemq7" /></div>
+            <div class="infl-course-body" style="background-color: #206bc7;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] Claude Code로 데이터 분석 자동화하기</div>
+                <p class="infl-course-desc">SQL&middot;Python 없이도 CSV 분석부터 HTML&middot;PDF 리포트 자동 생성, 업무 자동화 파이프라인 구축까지 한 번에 익힐 수 있습니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #154f9a;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-claude-data-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-purple" data-course-id="341931">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/files/courses/341931/cover/01kpt40fqfh234c721azrw324w" /></div>
+            <div class="infl-course-body" style="background-color: #701fd4;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] 바이브 코딩으로 만드는 AI 서비스</div>
+                <p class="infl-course-desc">코딩 없이 AI 서비스를 설계하고 구현하는 방법을 익힙니다. 실제 서비스 형태의 AI 웹앱 프로토타입을 완성합니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #4e10a0;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-vibecoding-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-teal" data-course-id="341930">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/files/courses/341930/cover/01kpt3ejkw4e0hkf06mmf8pw8j" /></div>
+            <div class="infl-course-body" style="background-color: #0e9a92;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] Gemini 배우면 회사 업무가 재미나요</div>
+                <p class="infl-course-desc">프레젠테이션 제작부터 데이터 분석, 업무 자동화까지 Gemini의 핵심 기능을 한 번에 익힐 수 있습니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #097370;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-gemini-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-green" data-course-id="341331">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/static-images/26e546a6-ab0c-44d0-b528-114268439be1.png" /></div>
+            <div class="infl-course-body" style="background-color: #00bd5e;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] 비개발자를 위한 AI 업무 자동화 마스터하기</div>
+                <p class="infl-course-desc">GPT&middot;Make로 내 업무에 맞는 AI 활용법을 익히고, 이메일&middot;보고서&middot;제안서 등 반복 업무를 자동화합니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #008c43;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-%EC%97%85%EB%AC%B4-%EC%9E%90%EB%8F%99%ED%99%94-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-pink" data-course-id="341924">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/files/courses/341924/cover/01kpszg8x703rf86rv9m3hawv0" /></div>
+            <div class="infl-course-body" style="background-color: #e93c8d;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] 멀티 AI Agent 시스템 개발 올인원(w.MCP,A2A)</div>
+                <p class="infl-course-desc">CrewAI, LangGraph, Google ADK를 활용한 역할 분리형 협업 구조를 구현하고, MCP를 통해 조직형 Agent 구조를 직접 설계합니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #b82468;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-ai-%EB%A9%80%ED%8B%B0%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+          <div class="infl-course infl-c-red" data-course-id="341332">
+            <div class="infl-course-img"><img alt="" src="https://cdn.inflearn.com/public/static-images/19419454-3dcb-4ff8-a2c5-bb90a773a06a.png" /></div>
+            <div class="infl-course-body" style="background-color: #d83a3a;">
+              <div class="infl-course-content">
+                <div class="infl-course-title">[5월 환급 과정] Agentic AI 개발 실전: LLM + RAG + Tools + Workflow</div>
+                <p class="infl-course-desc">업무를 끝까지 수행하는 Agent를 설계하는 방법을 익히는 실무 중심 교육입니다. RAG&middot;Tool&middot;Reasoning을 구조로 연결합니다.</p>
+              </div>
+              <a class="infl-course-cta" style="background-color: #a82828;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-agentic-ai-%EA%B0%9C%EB%B0%9C-%EC%8B%A4%EC%A0%84-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- list-render config (course.html과 동일 — 인플런 강의 API 동적 갱신용) -->
+  <script type="application/json" id="mk-list-render-config">{"container":"#course-list","source":"challenges-recommend","filter":{"skillSlugs":["small-business-subsidy"],"applyStatus":"BEFORE_END","sort":"RECOMMEND","pageNumber":1,"pageSize":20},"template":"<div class=\"infl-course\" data-course-id=\"{{id}}\"><div class=\"infl-course-img\"><img alt=\"\" src=\"{{thumbnail}}\" /></div><div class=\"infl-course-body\"><div class=\"infl-course-content\"><div class=\"infl-course-title\">{{title}}</div><p class=\"infl-course-desc\">{{description}}</p></div><a class=\"infl-course-cta\" href=\"{{courseUrl}}\" target=\"_blank\" rel=\"noopener\">자세히 알아보기 <span class=\"infl-arrow\">&rarr;</span></a></div></div>"}</script>
+
   <!-- ===== 담당자 문의 섹션 ===== -->
   <section class="skp-section">
     <div class="skp-container">
       <div class="skp-contact">
-        <h2 class="skp-contact-title">단체·기업 문의</h2>
+        <h2 class="skp-contact-title">문의하기</h2>
         <p class="skp-contact-desc">
-          궁금하신 점은 아래 담당자에게 편하게 문의해 주세요.
+          궁금하신 점은 아래 이메일로 편하게 문의해 주세요.
         </p>
         <div class="skp-contact-info">
           <div class="skp-contact-info-row">
-            <strong>담당자</strong>진보경 매니저
-          </div>
-          <div class="skp-contact-info-row">
             <strong>이메일</strong>
-            <a href="mailto:ariel@inflab.com">ariel@inflab.com</a>
+            <a href="mailto:gov.partnership@inflab.com">gov.partnership@inflab.com</a>
           </div>
         </div>
         <div>
-          <a href="mailto:ariel@inflab.com" class="skp-btn skp-btn-secondary">
-            단체 문의하기
+          <a href="mailto:gov.partnership@inflab.com" class="skp-btn skp-btn-secondary">
+            문의하기
           </a>
         </div>
       </div>
@@ -982,7 +1321,7 @@ body.skp-modal-active {
                   <li>근로복지공단: <strong>1588-0075</strong></li>
                 </ul>
               </li>
-              <li>온라인 확인: <a href="https://www.gov.kr/mw/AA020InfoCappView.do?HighCtgCD=A05007&CappBizCD=14900000031&tp_seq=" target="_blank" rel="noopener noreferrer">우선지원 대상 기업 신청하기 →</a></li>
+              <li>온라인 확인: <a href="https://itcampus.hankyung.com/promotion/20260213-b33ea1/imz/subpage.html" target="_blank" rel="noopener noreferrer">우선지원 대상 기업 확인하기 →</a></li>
             </ul>
           </div>
         </div>
@@ -1034,6 +1373,8 @@ body.skp-modal-active {
           </div>
         </div>
 
+        <div class="skp-submit-error" id="skp-submit-error" style="display: none;" role="alert"></div>
+
         <button type="button" class="skp-btn skp-btn-primary skp-btn-lg skp-submit-btn" id="skp-submit-btn" disabled>
           신청하기
         </button>
@@ -1081,7 +1422,8 @@ body.skp-modal-active {
     company: '',
     name: '',
     email: '',
-    submitting: false
+    submitting: false,
+    prevFocus: null     // 모달 열기 전 포커스 요소 (닫을 때 복귀용)
   };
 
   // === 검증 함수 ===
@@ -1193,6 +1535,9 @@ body.skp-modal-active {
 
   // === 모달 열기/닫기 ===
   function openModal() {
+    // 이전 포커스 기억 (접근성: 닫을 때 복귀)
+    state.prevFocus = document.activeElement;
+
     dom.modal.classList.add('skp-modal-open');
     dom.modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('skp-modal-active');
@@ -1223,8 +1568,45 @@ body.skp-modal-active {
   function closeModal() {
     dom.modal.classList.remove('skp-modal-open');
     dom.modal.setAttribute('aria-hidden', 'true');
+    dom.modal.removeAttribute('aria-busy');
     document.body.classList.remove('skp-modal-active');
+
+    // 접근성: 모달 열기 전 포커스로 복귀
+    if (state.prevFocus && typeof state.prevFocus.focus === 'function') {
+      try { state.prevFocus.focus(); } catch (e) { /* noop */ }
+    }
+    state.prevFocus = null;
+
     console.info('[SKP] 모달 닫힘');
+  }
+
+  // === Focus trap — Tab 키가 모달 밖으로 못 나가게 ===
+  function getFocusableElements() {
+    // 현재 보이는 view 안의 포커스 가능한 요소만
+    var view = dom.formView.style.display === 'none' ? dom.successView : dom.formView;
+    var selector = 'a[href]:not([aria-disabled="true"]), button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    // 닫기 버튼도 포함
+    var fromView = Array.prototype.slice.call(view.querySelectorAll(selector));
+    return [dom.closeBtn].concat(fromView).filter(function(el) {
+      return el && el.offsetParent !== null;  // visible 체크
+    });
+  }
+
+  function onTabKey(e) {
+    if (!dom.modal.classList.contains('skp-modal-open')) return;
+    var focusables = getFocusableElements();
+    if (focusables.length === 0) return;
+
+    var first = focusables[0];
+    var last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   function resetForm() {
@@ -1253,11 +1635,93 @@ body.skp-modal-active {
     dom.submitBtn.textContent = '신청하기';
   }
 
-  // === 제출 (Phase 3에서 Slack 연동으로 교체) ===
+  // === 유틸: KST 시간 포맷 (YYYY-MM-DD HH:mm) ===
+  function formatKstNow() {
+    var now = new Date();
+    // 브라우저 로컬 타임존 무시하고 명시적으로 UTC+9 계산
+    var kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    var pad = function(n) { return n < 10 ? '0' + n : String(n); };
+    return kst.getUTCFullYear() + '-' + pad(kst.getUTCMonth() + 1) + '-' + pad(kst.getUTCDate()) +
+           ' ' + pad(kst.getUTCHours()) + ':' + pad(kst.getUTCMinutes());
+  }
+
+  // === 유틸: CONFIG 값이 placeholder인지 (mock 모드 판단) ===
+  function isPlaceholder(val) {
+    return !val || typeof val !== 'string' || val.indexOf('<REPLACE_WITH_') === 0 || val === '';
+  }
+
+  function isProxyConfigured() {
+    return !isPlaceholder(CONFIG.SKP_APPS_SCRIPT_URL);
+  }
+
+  // === 파일을 base64로 변환 (Apps Script로 전송용) ===
+  function fileToBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        var result = reader.result || '';
+        var idx = result.indexOf(',');
+        resolve(idx >= 0 ? result.slice(idx + 1) : result);
+      };
+      reader.onerror = function() { reject(reader.error || new Error('FileReader error')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // === Google Apps Script로 신청 전송 ===
+  // Apps Script가 Drive 파일 저장 + Slack Webhook 메시지 전송을 모두 처리
+  // CORS preflight 회피를 위해 Content-Type을 'text/plain'으로 보냄
+  function submitToProxy(formData, file) {
+    return fileToBase64(file).then(function(base64) {
+      var payload = {
+        formData: formData,
+        file: {
+          name: file.name,
+          size: file.size,
+          mimeType: file.type || 'application/octet-stream',
+          base64: base64
+        },
+        mentionIds: CONFIG.SLACK_MENTION_USER_IDS || [],
+        adminEmails: CONFIG.ADMIN_EMAILS || []
+      };
+      return fetch(CONFIG.SKP_APPS_SCRIPT_URL, {
+        method: 'POST',
+        // 'text/plain'으로 simple request 처리 → CORS preflight 회피 (Apps Script 호환성)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'   // Apps Script는 종종 googleusercontent로 리다이렉트함
+      });
+    }).then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok || !data.success) {
+          throw new Error(data && data.error ? data.error : ('HTTP ' + res.status));
+        }
+        return data;
+      });
+    });
+  }
+
+  // === UI: 에러 표시 / 숨김 ===
+  function showSubmitError(msg) {
+    dom.submitError.textContent = msg;
+    dom.submitError.style.display = '';
+  }
+
+  function hideSubmitError() {
+    dom.submitError.textContent = '';
+    dom.submitError.style.display = 'none';
+  }
+
+  function showSuccessView() {
+    dom.formView.style.display = 'none';
+    dom.successView.style.display = '';
+  }
+
+  // === 제출 (Google Apps Script 경유 — Drive 저장 + Slack Webhook) ===
   function onSubmit() {
     if (state.submitting) return;
 
-    // 최종 검증
+    // 최종 검증 (중복 안전장치)
     var fileResult = validateFile(state.file);
     if (!fileResult.ok || !validateText(state.company) || !validateText(state.name) || !validateEmail(state.email)) {
       console.warn('[SKP] 제출 거부 — 검증 실패');
@@ -1267,22 +1731,53 @@ body.skp-modal-active {
     state.submitting = true;
     dom.submitBtn.disabled = true;
     dom.submitBtn.textContent = '전송 중...';
+    dom.modal.setAttribute('aria-busy', 'true');
+    hideSubmitError();
 
-    // Phase 3에서 실제 Slack API 호출로 교체
-    console.info('[SKP] 제출 데이터 (Phase 2 mock):', {
-      file: state.file ? { name: state.file.name, size: state.file.size } : null,
+    var formData = {
       company: state.company.trim(),
       name: state.name.trim(),
       email: state.email.trim(),
-      submitted_at: new Date().toISOString()
-    });
+      submittedAt: formatKstNow()
+    };
+    var file = state.file;
 
-    // mock 딜레이 후 성공 화면
-    setTimeout(function() {
-      dom.formView.style.display = 'none';
-      dom.successView.style.display = '';
-      state.submitting = false;
-    }, 600);
+    // === Mock 모드 (Apps Script URL placeholder 상태) ===
+    if (!isProxyConfigured()) {
+      console.warn('[SKP] SKP_APPS_SCRIPT_URL 미설정 — mock 모드로 동작합니다. Apps Script 배포 후 URL을 CONFIG에 반영하세요.');
+      console.info('[SKP] (Mock) 전송할 데이터:', {
+        formData: formData,
+        file: { name: file.name, size: file.size, mimeType: file.type },
+        mentionIds: CONFIG.SLACK_MENTION_USER_IDS,
+        adminEmails: CONFIG.ADMIN_EMAILS
+      });
+      setTimeout(function() {
+        showSuccessView();
+        state.submitting = false;
+        dom.modal.removeAttribute('aria-busy');
+      }, 600);
+      return;
+    }
+
+    // === 실제 Apps Script 호출 ===
+    submitToProxy(formData, file)
+      .then(function(result) {
+        console.info('[SKP] 전송 완료:', result);
+        if (result.uploadError) {
+          console.warn('[SKP] 파일 업로드는 실패했지만 메시지는 전송됨:', result.uploadError);
+        }
+        showSuccessView();
+        state.submitting = false;
+        dom.modal.removeAttribute('aria-busy');
+      })
+      .catch(function(err) {
+        console.error('[SKP] 전송 실패:', err);
+        showSubmitError('전송에 실패했습니다. 잠시 후 다시 시도해 주세요. 문제가 지속되면 담당자(ariel@inflab.com)에게 연락해 주세요.');
+        state.submitting = false;
+        dom.submitBtn.disabled = false;
+        dom.submitBtn.textContent = '신청하기';
+        dom.modal.removeAttribute('aria-busy');
+      });
   }
 
   function onSuccessClose() {
@@ -1303,10 +1798,14 @@ body.skp-modal-active {
 
   // === 키보드 / 외부 클릭 ===
   function onKeyDown(e) {
-    if (e.key === 'Escape' && dom.modal.classList.contains('skp-modal-open')) {
+    if (!dom.modal.classList.contains('skp-modal-open')) return;
+
+    if (e.key === 'Escape') {
       // 제출 중이면 닫기 차단
       if (state.submitting) return;
       closeModal();
+    } else if (e.key === 'Tab') {
+      onTabKey(e);
     }
   }
 
@@ -1343,6 +1842,7 @@ body.skp-modal-active {
     dom.emailInput = document.getElementById('skp-email');
     dom.emailError = document.getElementById('skp-email-error');
     dom.submitBtn = document.getElementById('skp-submit-btn');
+    dom.submitError = document.getElementById('skp-submit-error');
 
     // 신청 버튼 (페이지 내 모든 위치) → 모달 열기
     var applyBtns = document.querySelectorAll('.skp-apply-btn');
@@ -1368,21 +1868,322 @@ body.skp-modal-active {
     // 제출
     dom.submitBtn.addEventListener('click', onSubmit);
 
-    // 외부 디버깅 핸들
+    // 외부 디버깅 핸들 (콘솔에서 직접 호출 가능)
     window.SKP = {
       openModal: openModal,
       closeModal: closeModal,
       resetForm: resetForm,
-      getState: function() { return Object.assign({}, state); }
+      getState: function() { return Object.assign({}, state); },
+      isProxyConfigured: isProxyConfigured,
+      submitToProxy: submitToProxy,
+      fileToBase64: fileToBase64,
+      formatKstNow: formatKstNow
     };
 
-    console.info('[SKP] 초기화 완료 — 신청 버튼 ' + applyBtns.length + '개 바인딩');
+    console.info('[SKP] 초기화 완료 — 신청 버튼 ' + applyBtns.length + '개 바인딩, Apps Script 설정: ' +
+                 (isProxyConfigured() ? '✅' : '⏳ placeholder (mock 모드)'));
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+})();
+</script>
+
+<!-- ============================================
+  지원 강의 소개 — scroll-reveal + 색상 자동 매핑 (course.html에서 이식)
+============================================ -->
+<script>
+(function () {
+  var root = document.querySelector('.infl-root');
+  if (!root) return;
+
+  /* scroll-reveal */
+  var els = root.querySelectorAll('.infl-reveal');
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(function (el) { el.classList.add('infl-is-visible'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('infl-is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* list-render: nth-child 위치별 색/배경 매핑 */
+  var COURSE_COLORS = ['infl-c-orange', 'infl-c-blue', 'infl-c-pink', 'infl-c-purple', 'infl-c-green', 'infl-c-teal', 'infl-c-red'];
+  var COURSE_COLOR_MAP = {
+    'infl-c-orange': { body: '#ff5c21', cta: '#c93e10' },
+    'infl-c-blue':   { body: '#206bc7', cta: '#154f9a' },
+    'infl-c-pink':   { body: '#e93c8d', cta: '#b82468' },
+    'infl-c-purple': { body: '#701fd4', cta: '#4e10a0' },
+    'infl-c-green':  { body: '#00bd5e', cta: '#008c43' },
+    'infl-c-teal':   { body: '#0e9a92', cta: '#097370' },
+    'infl-c-red':    { body: '#d83a3a', cta: '#a82828' }
+  };
+  function applyCourseStyles() {
+    var grid = document.getElementById('course-list');
+    if (!grid) return;
+    var cards = grid.querySelectorAll(':scope > .infl-course');
+    cards.forEach(function (el, i) {
+      COURSE_COLORS.forEach(function (c) { el.classList.remove(c); });
+      var colorKey = COURSE_COLORS[i % COURSE_COLORS.length];
+      if (!colorKey) return;
+      el.classList.add(colorKey);
+      var colors = COURSE_COLOR_MAP[colorKey];
+      var body = el.querySelector('.infl-course-body');
+      var cta  = el.querySelector('.infl-course-cta');
+      if (body) body.style.backgroundColor = colors.body;
+      if (cta)  cta.style.backgroundColor  = colors.cta;
+    });
+  }
+  applyCourseStyles();
+  var courseGrid = document.getElementById('course-list');
+  if (courseGrid) {
+    new MutationObserver(applyCourseStyles).observe(courseGrid, { childList: true });
+  }
+})();
+</script>
+
+<!-- ============================================
+  MK-course-card-hydrate: list-render 런타임 (course.html과 동일)
+  인플런 강의 API를 호출해 컨테이너를 실시간으로 재렌더.
+============================================ -->
+<script>
+(function () {
+  var cfgEl = document.getElementById('mk-list-render-config');
+  if (!cfgEl) return;
+  var cfg;
+  try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
+  if (!cfg || !cfg.container || !cfg.source || !cfg.template) return;
+
+  var IS_DEV = location.hostname.indexOf('devinflearn') !== -1;
+  var API_HOST = IS_DEV ? 'course-api.devinflearn.com' : 'course-api.inflearn.com';
+  var WWW_HOST = IS_DEV ? 'www.devinflearn.com' : 'www.inflearn.com';
+  var API_BASE = 'https://' + API_HOST;
+
+  function asList(v) {
+    if (v == null) return [];
+    if (Array.isArray(v)) return v;
+    return String(v).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function buildSearchUrl(filter) {
+    var q = new URLSearchParams();
+    function set(k, v) {
+      if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) return;
+      q.set(k, Array.isArray(v) ? v.join(',') : String(v));
+    }
+    set('keyword', filter.keyword);
+    set('categories', asList(filter.categories));
+    set('skills', asList(filter.skills));
+    set('levels', asList(filter.levels));
+    set('charge', asList(filter.charge));
+    set('types', asList(filter.types));
+    set('runtimes', asList(filter.runtimes));
+    set('prices', asList(filter.prices));
+    set('courseTags', asList(filter.courseTags));
+    set('sort', filter.sort);
+    if (filter.isDiscounted) q.set('isDiscounted', 'true');
+    if (filter.isEarlybirdDiscounted) q.set('isEarlybirdDiscounted', 'true');
+    if (filter.isB2bSubscriptionOrFree) q.set('isB2bSubscriptionOrFree', 'true');
+    if (filter.useAndOperatorForSkillTags) q.set('useAndOperatorForSkillTags', 'true');
+    q.set('pageNumber', String(Math.max(0, (filter.pageNumber || 1) - 1)));
+    q.set('pageSize', String(filter.pageSize || 20));
+    return API_BASE + '/client/api/v2/courses/search?' + q.toString();
+  }
+
+  function buildChallengesRecommendUrl(filter) {
+    var q = new URLSearchParams();
+    if (filter.applyStatus) q.set('applyStatus', filter.applyStatus);
+    if (filter.sort) q.set('sort', filter.sort);
+    if (filter.hasLiveSession) q.set('hasLiveSession', 'true');
+    if (filter.isDiscounted) q.set('isDiscounted', 'true');
+    if (filter.charge) q.set('charge', filter.charge);
+    var slugs = asList(filter.skillSlugs || filter.skills);
+    for (var i = 0; i < slugs.length; i++) q.append('skillSlugs', slugs[i]);
+    q.set('pageNumber', String(Math.max(0, (filter.pageNumber || 1) - 1)));
+    q.set('pageSize', String(filter.pageSize || 20));
+    return API_BASE + '/client/api/v2/challenges/recommend?' + q.toString();
+  }
+
+  function buildListUrl(source, filter) {
+    if (source === 'courses-search') return buildSearchUrl(filter || {});
+    if (source === 'challenges-recommend') return buildChallengesRecommendUrl(filter || {});
+    return null;
+  }
+
+  function fmtKR(n) { return Number(n || 0).toLocaleString('ko-KR'); }
+
+  function adaptPaymentInfo(d) {
+    if (!d) return null;
+    var pi = d.paymentInfo || {};
+    var rv = d.review || {};
+    var ins = (d.instructors && d.instructors[0]) || {};
+    var pay = Number(pi.payPrice || 0);
+    var reg = Number(pi.regularPrice || 0);
+    var star = Number(rv.averageStar || 0);
+    var isChallenge = d.courseType === 'CHALLENGE' || d.challenge != null;
+    var slug = d.slug || '';
+    return {
+      id: d.id,
+      slug: slug,
+      title: d.title || '',
+      description: d.description || '',
+      thumbnail: d.thumbnailUrl || '',
+      instructor: ins.name || '',
+      courseUrl:
+        'https://' + WWW_HOST + '/' +
+        (isChallenge ? 'challenge' : 'course') + '/' +
+        encodeURIComponent(slug),
+      rating: (rv.count || 0) === 0 ? 'NEW' : '★ ' + star.toFixed(1),
+      ratingScore: star.toFixed(1),
+      ratingCount: fmtKR(rv.count || 0),
+      students: fmtKR(d.studentCount || 0),
+      pricePay: pay === 0 ? '무료' : fmtKR(pay),
+      priceOriginal: fmtKR(reg),
+      discount: reg > 0 && pay < reg ? Math.round((1 - pay / reg) * 100) : 0,
+      isFree: pay === 0,
+      isDiscounted: reg > pay,
+      type: d.courseType || (isChallenge ? 'CHALLENGE' : 'ONLINE'),
+      applyStatus: (d.challenge && d.challenge.challengeStatus) || '',
+      hasLiveSession: !!(d.challenge && d.challenge.hasLiveSession),
+      capacity: (d.challenge && d.challenge.capacity) || 0,
+      applicantCount: (d.challenge && d.challenge.applicantCount) || 0,
+      level: (d.levels && d.levels[0]) || ''
+    };
+  }
+
+  function htmlEscape(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderTemplate(tpl, bag) {
+    return tpl
+      .replace(/\{\{\{\s*([\w.]+)\s*\}\}\}/g, function (_, k) {
+        var v = bag[k]; return v == null ? '' : String(v);
+      })
+      .replace(/\{\{\s*([\w.]+)\s*\}\}/g, function (_, k) {
+        var v = bag[k]; return v == null ? '' : htmlEscape(v);
+      });
+  }
+
+  function fetchJson(url) {
+    return fetch(url, { credentials: 'omit' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+
+  function fetchPaymentInfo(id) {
+    return fetchJson(API_BASE + '/client/api/v1/courses/' + id + '/payment-info')
+      .then(function (j) { return (j && j.statusCode === 'OK' && j.data) ? j.data : null; })
+      .catch(function () { return null; });
+  }
+
+  function makePlaceholder(id) {
+    var html = renderTemplate(cfg.template, { id: id });
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var node = tmp.firstElementChild;
+    if (!node) return null;
+    node.setAttribute('data-course-id', String(id));
+    node.setAttribute('data-mk-placeholder', '');
+    var imgs = node.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      if (!imgs[i].getAttribute('src')) imgs[i].removeAttribute('src');
+    }
+    return node;
+  }
+
+  function applyLayoutDiff(container, idsStr, existingMap) {
+    Object.keys(existingMap).forEach(function (id) {
+      if (idsStr.indexOf(id) === -1) existingMap[id].remove();
+    });
+    for (var i = 0; i < idsStr.length; i++) {
+      var id = idsStr[i];
+      var existing = existingMap[id];
+      if (existing) {
+        container.appendChild(existing);
+      } else {
+        var ph = makePlaceholder(id);
+        if (ph) container.appendChild(ph);
+      }
+    }
+  }
+
+  function updateCardInPlace(container, id, bag) {
+    var card = container.querySelector('[data-course-id="' + CSS.escape(String(id)) + '"]');
+    if (!card) return;
+    var newHtml = renderTemplate(cfg.template, bag);
+    var tmp = document.createElement('div');
+    tmp.innerHTML = newHtml;
+    var fresh = tmp.firstElementChild;
+    if (!fresh) return;
+    fresh.setAttribute('data-course-id', String(bag.id));
+    if (!card.hasAttribute('data-mk-placeholder') && card.outerHTML === fresh.outerHTML) return;
+    card.replaceWith(fresh);
+  }
+
+  function run() {
+    var container = document.querySelector(cfg.container);
+    if (!container) return;
+    var listUrl = buildListUrl(cfg.source, cfg.filter);
+    if (!listUrl) return;
+
+    var existingCards = [];
+    var existingIdsOrdered = [];
+    var existingMap = {};
+    var kids = container.children;
+    for (var i = 0; i < kids.length; i++) {
+      var k = kids[i];
+      var cid = k.getAttribute && k.getAttribute('data-course-id');
+      if (!cid) continue;
+      existingCards.push(k);
+      existingIdsOrdered.push(cid);
+      existingMap[cid] = k;
+    }
+
+    fetchJson(listUrl).then(function (json) {
+      var items = (json && json.data && json.data.items) || (json && json.items) || [];
+      var ids = items
+        .map(function (it) { return it && it.id; })
+        .filter(function (x) { return x != null; })
+        .map(String);
+
+      var sameOrderedSet =
+        ids.length === existingIdsOrdered.length &&
+        ids.every(function (id, i) { return existingIdsOrdered[i] === id; });
+
+      if (!sameOrderedSet) {
+        applyLayoutDiff(container, ids, existingMap);
+      }
+
+      if (ids.length === 0) return;
+
+      ids.forEach(function (id) {
+        fetchPaymentInfo(id).then(function (d) {
+          var bag = adaptPaymentInfo(d);
+          if (!bag) return;
+          updateCardInPlace(container, id, bag);
+        });
+      });
+    }).catch(function () { /* 실패 시 프리렌더 유지 */ });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
   }
 })();
 </script>
