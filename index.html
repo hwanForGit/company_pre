@@ -106,23 +106,52 @@ window.SKP_CONFIG = {
   margin: 0 0 40px;
 }
 
-/* ========== 히어로 ========== */
+/* ========== 히어로 (인플런 배너 톤) ========== */
 .skp-hero {
-  background: linear-gradient(135deg, #e8f9f0 0%, #ffffff 100%);
-  padding: 100px 0 80px;
+  background-color: #04b96e;
+  background-image: url('https://cdn.inflearn.com/public/static-images/58c268ef-12cf-46c0-ba61-58da64220480.png?f=avif');
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 520px;
+  padding: 80px 0 60px;
   text-align: center;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
-  .skp-hero { padding: 60px 0 48px; }
+  .skp-hero {
+    min-height: 480px;
+    padding: 56px 0 40px;
+  }
+}
+
+@media (min-width: 900px) {
+  .skp-hero {
+    background-image:
+      linear-gradient(90deg, #05b86f 0%, #05b86f 45%, rgba(5, 184, 111, 0) 78%),
+      url('https://cdn.inflearn.com/public/static-images/58c268ef-12cf-46c0-ba61-58da64220480.png?f=avif');
+    background-repeat: no-repeat, no-repeat;
+    background-position: 0 0, right bottom;
+    background-size: 100% 100%, auto 92%;
+    min-height: 600px;
+    padding: 120px 0 80px;
+  }
+  .skp-hero .skp-container {
+    text-align: left;
+    max-width: 1120px;
+  }
+  .skp-hero-text-wrap {
+    max-width: 640px;
+  }
 }
 
 .skp-hero-badge {
   display: inline-block;
-  background: var(--skp-color-primary);
-  color: #fff;
+  background: #fff;
+  color: var(--skp-color-primary);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 6px 14px;
   border-radius: 999px;
   margin-bottom: 20px;
@@ -132,41 +161,55 @@ window.SKP_CONFIG = {
 .skp-hero-title {
   font-size: 40px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.2;
   letter-spacing: -0.03em;
   margin: 0 0 20px;
-  color: var(--skp-color-text-primary);
+  color: #fff;
 }
 
 .skp-hero-title em {
-  color: var(--skp-color-primary);
+  color: #fff;
   font-style: normal;
+  font-weight: 800;
 }
 
 @media (max-width: 768px) {
-  .skp-hero-title { font-size: 28px; }
+  .skp-hero-title { font-size: 30px; line-height: 1.25; }
 }
 
 .skp-hero-desc {
   font-size: 18px;
-  color: var(--skp-color-text-secondary);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0 0 36px;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 @media (max-width: 768px) {
-  .skp-hero-desc { font-size: 16px; }
+  .skp-hero-desc { font-size: 15px; }
+}
+
+/* 히어로 안에서 Primary 버튼은 흰 배경 + 그린 텍스트로 (대비) */
+.skp-hero .skp-btn-primary {
+  background: #fff;
+  color: var(--skp-color-primary);
+}
+
+.skp-hero .skp-btn-primary:hover {
+  background: #f8f9fa;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
 .skp-hero-meta {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--skp-color-border);
-  color: var(--skp-color-text-secondary);
-  font-size: 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 13px;
   padding: 8px 16px;
   border-radius: 999px;
   margin-top: 24px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* ========== 버튼 ========== */
@@ -244,24 +287,55 @@ window.SKP_CONFIG = {
   border-radius: 12px;
   padding: 28px 20px;
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.skp-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(18, 69, 48, 0.1);
+}
+
+/* 4단계 그린 차별화 (course.html metric 스타일) */
+.skp-stat-card.skp-stat-1 {
+  background: #e0fae5;      /* green-50 */
+  border-color: #c9f1d1;
+}
+.skp-stat-card.skp-stat-2 {
+  background: #9ef2b8;      /* green-200 */
+  border-color: #7be09c;
+}
+.skp-stat-card.skp-stat-3 {
+  background: #2ecc80;      /* green-300 */
+  border-color: #24b873;
+  color: #fff;
+}
+.skp-stat-card.skp-stat-3 .skp-stat-value { color: #fff; }
+.skp-stat-card.skp-stat-3 .skp-stat-label { color: rgba(255, 255, 255, 0.95); }
+.skp-stat-card.skp-stat-4 {
+  background: #124530;      /* green-dark */
+  border-color: #0d3623;
+  color: #ccffd9;
+}
+.skp-stat-card.skp-stat-4 .skp-stat-value { color: #ccffd9; }
+.skp-stat-card.skp-stat-4 .skp-stat-label { color: rgba(204, 255, 217, 0.85); }
 
 .skp-stat-value {
   font-size: 36px;
   font-weight: 800;
-  color: var(--skp-color-primary);
+  color: #124530;
   line-height: 1.1;
   letter-spacing: -0.02em;
   margin-bottom: 8px;
 }
 
 @media (max-width: 768px) {
-  .skp-stat-value { font-size: 28px; }
+  .skp-stat-value { font-size: 26px; }
 }
 
 .skp-stat-label {
   font-size: 14px;
-  color: var(--skp-color-text-secondary);
+  color: #124530;
+  font-weight: 500;
   line-height: 1.5;
 }
 
@@ -788,6 +862,44 @@ window.SKP_CONFIG = {
   margin-top: 20px;
 }
 
+/* 제출 중 — 그린 유지하되 옅게 + 클릭 불가능 표시 */
+.skp-submit-btn.skp-is-submitting,
+.skp-submit-btn.skp-is-submitting:disabled,
+.skp-submit-btn.skp-is-submitting:hover,
+.skp-submit-btn.skp-is-submitting:focus {
+  background: var(--skp-color-primary);
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 로딩 스피너 */
+.skp-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: skp-spin 0.7s linear infinite;
+  vertical-align: -3px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+@keyframes skp-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skp-spinner {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.75);
+  }
+}
+
 /* 제출 에러 메시지 */
 .skp-submit-error {
   background: rgba(250, 82, 82, 0.08);
@@ -844,10 +956,18 @@ body.skp-modal-active {
   .infl-* prefix로 격리 — .skp-root 외부의 .infl-root 안에서 동작
 ============================================ */
 .infl-root {
+  --green: #03b965;
+  --green-strong: #00b866;
+  --green-dark: #124530;
   --green-50: #e0fae5;
+  --green-100: #d0ffcc;
+  --green-200: #9ef2b8;
+  --green-300: #2ecc80;
+  --green-mint: #adfcd5;
   --green-light: #dbffe8;
   --ink: #1c332b;
   --ink-soft: #5c786b;
+  --metric-dark-fg: #ccffd9;
 
   font-family: Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   color: var(--ink);
@@ -1087,6 +1207,250 @@ body.skp-modal-active {
     font-size: 13px;
   }
 }
+
+/* ============================================
+  FAQ (course.html에서 이식)
+============================================ */
+.infl-root .infl-faq-section {
+  background: #fff;
+  padding: 64px 20px 80px;
+}
+.infl-root .infl-faq-inner {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.infl-root .infl-faq-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.infl-root .infl-faq-heading h2 {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.infl-root .infl-faq-heading p {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}
+.infl-root .infl-faq {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.infl-root .infl-faq__item {
+  background: #fff;
+  border: 1px solid #d6ece0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.infl-root .infl-faq__item.infl-is-open {
+  border-color: #00bd5e;
+  box-shadow: 0 8px 24px rgba(18, 69, 48, .06);
+  background: #f6fdf8;
+}
+.infl-root .infl-faq__q {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: -0.2px;
+  transition: background .15s ease;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+}
+.infl-root .infl-faq__q:hover {
+  background: #f6fdf8;
+}
+.infl-root .infl-faq__q-mark {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: var(--green-50);
+  color: #00bd5e;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+}
+.infl-root .infl-faq__q-text {
+  flex: 1;
+}
+.infl-root .infl-faq__q-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  transition: transform .2s ease;
+}
+.infl-root .infl-faq__q-icon::before,
+.infl-root .infl-faq__q-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  background: var(--ink-soft);
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  transition: transform .2s ease, background .2s ease;
+}
+.infl-root .infl-faq__q-icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.infl-root .infl-faq__item.infl-is-open .infl-faq__q-icon::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.infl-root .infl-faq__item.infl-is-open .infl-faq__q-icon::before,
+.infl-root .infl-faq__item.infl-is-open .infl-faq__q-icon::after {
+  background: #00bd5e;
+}
+.infl-root .infl-faq__a {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 20px 0 62px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  transition: max-height .3s ease, padding-bottom .3s ease;
+}
+.infl-root .infl-faq__item.infl-is-open .infl-faq__a {
+  max-height: 1500px;
+  padding-bottom: 20px;
+}
+.infl-root .infl-faq__a strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.infl-root .infl-faq__a a {
+  color: #00a352;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.infl-root .infl-faq__a ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+.infl-root .infl-faq__a li {
+  margin-bottom: 4px;
+}
+.infl-root .infl-faq__a img {
+  display: block;
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid var(--green-50);
+}
+@media (min-width: 900px) {
+  .infl-root .infl-faq__a img {
+    max-width: 560px;
+  }
+}
+.infl-root .infl-faq__a-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.infl-root .infl-faq__a-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green-strong);
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  transition: background .15s ease, transform .15s ease;
+}
+.infl-root .infl-faq__a-btn:hover {
+  background: #009955;
+  transform: translateY(-1px);
+}
+
+/* FAQ 안에 있는 신청 버튼 (구글폼 링크 대체) — 인라인 텍스트 링크 스타일 */
+.infl-root .infl-faq__a .skp-apply-btn {
+  display: inline-block;
+  background: var(--green-strong);
+  color: #fff;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: inherit;
+  cursor: pointer;
+  margin: 0 2px;
+  transition: background .15s ease, transform .15s ease;
+}
+.infl-root .infl-faq__a .skp-apply-btn:hover {
+  background: #009955;
+  transform: translateY(-1px);
+}
+
+@media (min-width: 900px) {
+  .infl-root .infl-faq-section { padding: 96px 24px 100px; }
+  .infl-root .infl-faq-heading h2 { font-size: 40px; }
+  .infl-root .infl-faq-heading p { font-size: 18px; }
+  .infl-root .infl-faq { gap: 12px; }
+  .infl-root .infl-faq__q {
+    padding: 22px 28px;
+    gap: 16px;
+    font-size: 17px;
+  }
+  .infl-root .infl-faq__q-mark {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .infl-root .infl-faq__a {
+    padding: 0 28px 0 76px;
+    font-size: 15px;
+  }
+  .infl-root .infl-faq__item.infl-is-open .infl-faq__a {
+    padding-bottom: 24px;
+  }
+  .infl-root .infl-faq__a-btn {
+    font-size: 13px;
+    padding: 12px 20px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1121,19 +1485,19 @@ body.skp-modal-active {
   <section class="skp-stats">
     <div class="skp-container">
       <div class="skp-stats-grid">
-        <div class="skp-stat-card">
+        <div class="skp-stat-card skp-stat-1">
           <div class="skp-stat-value">90%</div>
           <div class="skp-stat-label">교육비 환급률<br>(기업 실부담 기준)</div>
         </div>
-        <div class="skp-stat-card">
+        <div class="skp-stat-card skp-stat-2">
           <div class="skp-stat-value">500만 원</div>
           <div class="skp-stat-label">최소 지원 금액<br>(기업당 연간 한도)</div>
         </div>
-        <div class="skp-stat-card">
+        <div class="skp-stat-card skp-stat-3">
           <div class="skp-stat-value">6시간</div>
           <div class="skp-stat-label">1일 완성 과정<br>(실무 중심 커리큘럼)</div>
         </div>
-        <div class="skp-stat-card">
+        <div class="skp-stat-card skp-stat-4">
           <div class="skp-stat-value">0원</div>
           <div class="skp-stat-label">재직자 부담<br>(회사 10%, 지원금 90%)</div>
         </div>
@@ -1303,6 +1667,94 @@ body.skp-modal-active {
                 <p class="infl-course-desc">업무를 끝까지 수행하는 Agent를 설계하는 방법을 익히는 실무 중심 교육입니다. RAG&middot;Tool&middot;Reasoning을 구조로 연결합니다.</p>
               </div>
               <a class="infl-course-cta" style="background-color: #a82828;" href="https://www.inflearn.com/challenge/%EC%A4%91%EC%9D%B8%ED%94%84-agentic-ai-%EA%B0%9C%EB%B0%9C-%EC%8B%A4%EC%A0%84-5%EC%9B%94" target="_blank" rel="noopener">자세히 알아보기 <span class="infl-arrow">&rarr;</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FAQ (course.html에서 이식) ===== -->
+    <div class="infl-faq-section">
+      <div class="infl-faq-inner">
+        <div class="infl-faq-heading">
+          <span class="infl-badge infl-reveal">FAQ</span>
+          <h2 class="infl-reveal infl-delay-1">자주 묻는 질문</h2>
+          <p class="infl-reveal infl-delay-2">신청 전에 가장 많이 받는 질문을 모았어요.</p>
+        </div>
+        <div class="infl-faq">
+          <div class="infl-faq__item infl-reveal" id="faq-eligibility">
+            <button class="infl-faq__q" type="button" aria-expanded="false">
+              <span class="infl-faq__q-mark">Q</span>
+              <span class="infl-faq__q-text">누가 신청할 수 있나요? (우선지원대상기업 조회 방법)</span>
+              <span class="infl-faq__q-icon" aria-hidden="true"></span>
+            </button>
+            <div class="infl-faq__a">
+              <strong>우선지원대상기업 소속의 고용보험 가입 근로자</strong>가 신청 대상입니다. 훈련 개시일 기준으로 자격이 확인됩니다. 사업주 훈련 신청 방식이므로 대표가 신청 후, 직원들이 수강하는 형식임을 확인 부탁드립니다. 사업주 자격으로는 HRD 담당자(인사팀)가 기업 명의로 신청서를 제출합니다.
+              <ul>
+                <li><strong>조회 방법 1.</strong> 정부24·고용보험 사이트의 <a href="https://itcampus.hankyung.com/promotion/20260213-b33ea1/imz/subpage.html" target="_blank" rel="noopener">우선지원 대상기업 확인 페이지</a>에서 사업자등록번호로 확인</li>
+                <li><strong>조회 방법 2.</strong> 관할 고용센터에 사업자등록번호로 문의</li>
+                <li><strong>조회 방법 3.</strong> 인사팀(HRD 담당자)에게 우선지원대상기업 신고 여부 확인 요청</li>
+              </ul>
+              확인 결과 우선지원대상기업이 아니라면 위 페이지에서 <strong>훈련 개시일 전까지</strong> 신청을 완료해 주세요.
+            </div>
+          </div>
+
+          <div class="infl-faq__item infl-reveal">
+            <button class="infl-faq__q" type="button" aria-expanded="false">
+              <span class="infl-faq__q-mark">Q</span>
+              <span class="infl-faq__q-text">90% 환급은 어떻게 계산되나요?</span>
+              <span class="infl-faq__q-icon" aria-hidden="true"></span>
+            </button>
+            <div class="infl-faq__a">
+              교육비의 <strong>90%를 정부가 지원</strong>하고, 기업이 <strong>10%만 부담</strong>합니다. 재직자 본인은 부담금이 없어 <strong>0원</strong>으로 수강 가능합니다.
+              <ul>
+                <li>환급한도: 고용보험 개산보험료의 <strong>240%</strong></li>
+                <li>500인 미만 기업: <strong>최소 500만원 이상</strong> 한도 보장</li>
+                <li>지원 기준: 사업주 실부담액 기준</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="infl-faq__item infl-reveal">
+            <button class="infl-faq__q" type="button" aria-expanded="false">
+              <span class="infl-faq__q-mark">Q</span>
+              <span class="infl-faq__q-text">강의 신청은 어떻게 진행되나요?</span>
+              <span class="infl-faq__q-icon" aria-hidden="true"></span>
+            </button>
+            <div class="infl-faq__a">
+              신청은 두 가지만 체크하면 끝납니다.
+              <ul>
+                <li><strong>CHECK 01</strong> · HRD/인사팀 담당자가 <button type="button" class="skp-apply-btn">신청하기</button> 버튼으로 지원 신청서를 제출</li>
+                <li><strong>CHECK 02</strong> · 우선지원대상기업 신청을 훈련 시작 전까지 완료</li>
+              </ul>
+              <p style="margin: 16px 0 8px;">아래의 과정을 통해 우선지원대상기업 교육비 지원 대상자 여부와 한도를 바로 확인해보세요!</p>
+              <img src="https://cdn.inflearn.com/public/static-images/39cd5aa5-2daa-4494-b4ba-3b0237ad76f1.png?f=avif" alt="방법 1. 기업 공동인증서가 있는 경우 - 고용24 접속 후 마이페이지에서 지원한도 조회" />
+              <img src="https://cdn.inflearn.com/public/static-images/2bda0cc5-5e5c-4f1a-8818-50fe52e2aa0f.png?f=avif" alt="방법 2. 사업장관리번호를 아는 경우 - 고용/산재보험 토탈서비스에서 사업장 총괄카드 조회" />
+            </div>
+          </div>
+
+          <div class="infl-faq__item infl-reveal">
+            <button class="infl-faq__q" type="button" aria-expanded="false">
+              <span class="infl-faq__q-mark">Q</span>
+              <span class="infl-faq__q-text">언제까지 신청해야 하나요?</span>
+              <span class="infl-faq__q-icon" aria-hidden="true"></span>
+            </button>
+            <div class="infl-faq__a">
+              <strong>예산 소진 시 조기 마감</strong>되므로 가능한 빨리 신청을 권장드립니다. 우선지원대상기업 신청은 훈련 개시일 전까지만 완료하면 되며, 강의별 모집 마감일은 각 강의 페이지에서 확인할 수 있습니다.
+            </div>
+          </div>
+
+          <div class="infl-faq__item infl-reveal">
+            <button class="infl-faq__q" type="button" aria-expanded="false">
+              <span class="infl-faq__q-mark">Q</span>
+              <span class="infl-faq__q-text">강의 일정은 어떻게 되나요?</span>
+              <span class="infl-faq__q-icon" aria-hidden="true"></span>
+            </button>
+            <div class="infl-faq__a">
+              <div class="infl-faq__a-row">
+                <span>버튼을 눌러서 일정을 확인해주세요.</span>
+                <a class="infl-faq__a-btn" href="https://docs.google.com/spreadsheets/d/1987RrtypNqHxd8R4fIOQa4hsFsYjONNUDOU0rjfaUcU/edit?gid=0#gid=0" target="_blank" rel="noopener">일정 확인하기 &rarr;</a>
+              </div>
             </div>
           </div>
         </div>
@@ -1724,6 +2176,7 @@ body.skp-modal-active {
     });
 
     dom.submitBtn.disabled = true;
+    dom.submitBtn.classList.remove('skp-is-submitting');
     dom.submitBtn.textContent = '신청하기';
   }
 
@@ -1822,7 +2275,8 @@ body.skp-modal-active {
 
     state.submitting = true;
     dom.submitBtn.disabled = true;
-    dom.submitBtn.textContent = '전송 중...';
+    dom.submitBtn.classList.add('skp-is-submitting');
+    dom.submitBtn.innerHTML = '<span class="skp-spinner" aria-hidden="true"></span>전송 중...';
     dom.modal.setAttribute('aria-busy', 'true');
     hideSubmitError();
 
@@ -1867,6 +2321,7 @@ body.skp-modal-active {
         showSubmitError('전송에 실패했습니다. 잠시 후 다시 시도해 주세요. 문제가 지속되면 담당자(ariel@inflab.com)에게 연락해 주세요.');
         state.submitting = false;
         dom.submitBtn.disabled = false;
+        dom.submitBtn.classList.remove('skp-is-submitting');
         dom.submitBtn.textContent = '신청하기';
         dom.modal.removeAttribute('aria-busy');
       });
@@ -2006,6 +2461,38 @@ body.skp-modal-active {
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
     els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* FAQ accordion */
+  var faqItems = root.querySelectorAll('.infl-faq__item');
+  faqItems.forEach(function (item) {
+    var btn = item.querySelector('.infl-faq__q');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var open = item.classList.toggle('infl-is-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  /* hash → open targeted FAQ (예: #faq-eligibility) */
+  function openTargetedFaq() {
+    var id = (location.hash || '').slice(1);
+    if (!id) return;
+    var el = document.getElementById(id);
+    if (el && el.classList.contains('infl-faq__item')) {
+      el.classList.add('infl-is-open');
+      var btn = el.querySelector('.infl-faq__q');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(function () {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+  window.addEventListener('hashchange', openTargetedFaq);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openTargetedFaq);
+  } else {
+    openTargetedFaq();
   }
 
   /* list-render: nth-child 위치별 색/배경 매핑 */
