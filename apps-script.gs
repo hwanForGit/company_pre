@@ -205,8 +205,22 @@ function saveFileToDrive(file, formData, folderId) {
   var folder = DriveApp.getFolderById(folderId);
   var driveFile = folder.createFile(blob);
 
-  // "링크 있는 누구나 보기" 권한 설정 → Slack 멤버가 클릭 시 접근 가능
-  driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  // 공유 권한 설정 시도 — Workspace 정책에 따라 실패할 수 있음.
+  // 폴더 자체에 담당자 3명 권한이 사전 설정되어 있으면 파일이 상속받으므로
+  // 이 호출이 실패해도 담당자들은 정상 접근 가능. 따라서 try-catch로 무시.
+  try {
+    driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (err1) {
+    console.warn('setSharing ANYONE_WITH_LINK failed (will fall back): ' + err1.message);
+    // 회사 도메인 내부 공유 시도
+    try {
+      driveFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+      console.log('setSharing DOMAIN_WITH_LINK succeeded');
+    } catch (err2) {
+      console.warn('setSharing DOMAIN_WITH_LINK also failed: ' + err2.message);
+      console.warn('→ 폴더 사전 공유 권한에 의존합니다 (담당자가 폴더에 권한 있어야 다운로드 가능)');
+    }
+  }
 
   var fileId = driveFile.getId();
 

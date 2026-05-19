@@ -17,7 +17,7 @@
 window.SKP_CONFIG = {
   // Google Apps Script Web App URL — Drive 저장 + Slack Webhook 프록시
   // 실제 Slack Webhook URL은 Apps Script의 Script Properties에 보관됨
-  SKP_APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxuRYCydFkxZAlokdSwzddQjl0yaIsGF0NsTiGuWqegp7zfAPEKrajpqOt2MeaeEnT4TQ/exec",
+  SKP_APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwKhu0M34s2NCkW5zewyZItKvks-DN3Sxk-cQAf0Lgo4-hiis7CB2LeDx8UotiAEfVARg/exec",
 
   // 양식 파일 호스팅 URL (공개 CDN)
   SAMPLE_XLSX_URL: "https://cdn.inflab.com/b2g/%ED%9B%88%EB%A0%A8%EC%83%9D%20%EC%97%91%EC%85%80%20%EC%97%85%EB%A1%9C%EB%93%9C%20%EC%96%91%EC%8B%9D(%EC%88%98%EC%A0%95%20-%20%ED%95%84%EC%88%98%EA%B8%B0%EC%9E%AC%20%EB%B0%8F%20%EC%9E%85%EB%A0%A5%EA%B0%92%20%EC%B6%94%EA%B0%80).xlsx",
@@ -559,6 +559,69 @@ window.SKP_CONFIG = {
   color: var(--skp-color-warning-text);
   text-decoration: underline;
   font-weight: 600;
+}
+
+/* 새 안내 (참고 사항) 추가 스타일 */
+.skp-notice-body .skp-notice-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 14px 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.skp-notice-body .skp-notice-subsection {
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 14px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed rgba(122, 91, 0, 0.25);
+}
+
+.skp-notice-body .skp-notice-method {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin: 10px 0 4px;
+  padding-left: 2px;
+}
+
+.skp-notice-body .skp-notice-step-intro {
+  margin: 2px 0 4px;
+  font-weight: 500;
+  padding-left: 2px;
+}
+
+.skp-notice-body ol.skp-notice-steps {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 6px;
+}
+
+.skp-notice-body ol.skp-notice-steps li {
+  padding-left: 2px;
+  position: static;
+  margin-bottom: 2px;
+}
+
+.skp-notice-body ol.skp-notice-steps li::before {
+  content: "";
+  display: none;
+}
+
+.skp-notice-body ul.skp-notice-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 6px;
+}
+
+.skp-notice-body ul.skp-notice-bullets li {
+  padding-left: 2px;
+  position: static;
+  margin-bottom: 2px;
+}
+
+.skp-notice-body ul.skp-notice-bullets li::before {
+  content: "";
+  display: none;
 }
 
 /* 단계 카드 */
@@ -1107,7 +1170,7 @@ body.skp-modal-active {
           <div class="skp-info-card-label">환급 한도</div>
           <div class="skp-info-card-title">고용보험 개산보험료의 240%</div>
           <p class="skp-info-card-desc">
-            기업의 고용보험 납부액에 따라 한도가 상이합니다. 자세한 한도는 담당자에게 문의해 주세요.
+            기업의 고용보험 납부액에 따라 한도가 상이합니다. 자세한 한도는 고용24에서 지원한도 조회를 진행하세요.
           </p>
         </div>
 
@@ -1313,16 +1376,45 @@ body.skp-modal-active {
             본 프로그램은 우선지원대상기업 소속 근로자를 대상으로 <strong>'기업 단위'</strong>로만 신청 가능합니다.
           </p>
           <div class="skp-notice-body">
-            <p>▸ 우선지원 대상 기업 확인 방법</p>
-            <ul>
-              <li>전화 문의
-                <ul>
-                  <li>고용노동부 고객센터: 국번없이 <strong>1350</strong></li>
-                  <li>근로복지공단: <strong>1588-0075</strong></li>
-                </ul>
-              </li>
-              <li>온라인 확인: <a href="https://itcampus.hankyung.com/promotion/20260213-b33ea1/imz/subpage.html" target="_blank" rel="noopener noreferrer">우선지원 대상 기업 확인하기 →</a></li>
+            <p class="skp-notice-section-label">[참고 사항]</p>
+
+            <p class="skp-notice-subsection">■ 우선지원대상기업 조회 방법</p>
+
+            <p class="skp-notice-method">1. 고용·산재보험 토탈서비스 기준</p>
+            <ol class="skp-notice-steps">
+              <li>① <a href="https://total.comwel.or.kr/" target="_blank" rel="noopener noreferrer">고용·산재보험 토탈서비스</a> 접속</li>
+              <li>② 사업장 로그인 (공동인증서 / 간편인증)</li>
+              <li>③ 상단 메뉴 [정보조회] → [보험가입정보조회] → [사업장 총괄카드 조회]</li>
+              <li>④ 사업장 관리번호(사업자등록번호) 입력 후 조회</li>
+              <li>⑤ '대규모기업' 항목 확인 → <strong>"비해당"</strong> 표시 시 우선지원대상기업으로 간주</li>
+            </ol>
+
+            <p class="skp-notice-method">2. 고용24 기준</p>
+            <p class="skp-notice-step-intro"><a href="https://m.work24.go.kr/cm/main.do" target="_blank" rel="noopener noreferrer">고용24</a> 접속 → 기업회원 로그인 후 아래 경로 중 하나</p>
+            <ul class="skp-notice-bullets">
+              <li>① [직업능력개발] → [사업주훈련] → [지원한도 조회]</li>
+              <li>② [마이페이지] → [재직자 훈련관리] → [사업주훈련] → [지원한도 조회]</li>
             </ul>
+
+            <p class="skp-notice-subsection">■ 지원한도 — 개산보험료 환급기준</p>
+
+            <p class="skp-notice-method">1. 기업 공동인증서가 있는 경우</p>
+            <p class="skp-notice-step-intro"><a href="https://www.work24.go.kr/cm/main.do" target="_blank" rel="noopener noreferrer">고용24</a> 접속 → 마이페이지 → 재직자훈련관리 → 사업주훈련 → 지원한도 조회</p>
+
+            <p class="skp-notice-method">2. 사업장 관리번호를 아는 경우</p>
+            <p class="skp-notice-step-intro"><a href="https://total.comwel.or.kr/" target="_blank" rel="noopener noreferrer">고용·산재보험 토탈서비스</a> 접속 → 정보조회 → 보험가입정보 조회 → 사업장 총괄카드 조회 → 사업장 관리번호 입력 후 "조회" 클릭</p>
+
+            <p class="skp-notice-subsection">■ 비용수급사업장번호란?</p>
+            <ul class="skp-notice-bullets">
+              <li>비용수급사업장번호(11자리) = 고용보험관리번호</li>
+              <li>일반적으로 <strong>사업자등록번호(10자리) + "0"</strong></li>
+            </ul>
+
+            <p class="skp-notice-method">▸ 비용수급사업장번호 확인 방법</p>
+            <ol class="skp-notice-steps">
+              <li>① <a href="https://www.comwel.or.kr/comwel/main.jsp" target="_blank" rel="noopener noreferrer">근로복지공단 홈페이지</a> 접속</li>
+              <li>② 자주찾는 서비스 → [사업장 관리번호 찾기] 클릭</li>
+            </ol>
           </div>
         </div>
 
