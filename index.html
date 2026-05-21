@@ -547,12 +547,11 @@ window.SKP_CONFIG = {
 }
 
 @media (max-width: 480px) {
-  .skp-modal-overlay { padding: 0; align-items: stretch; }
+  /* 모바일도 PC와 동일한 카드형 모달 유지. 좌우 여백만 살짝 축소. */
+  .skp-modal-overlay { padding: 24px 12px; }
   .skp-modal-content {
-    border-radius: 0;
-    min-height: 100vh;
-    padding: 56px 20px 32px;
-    margin: 0;
+    background: #ffffff;
+    padding: 32px 22px 28px;
   }
 }
 
