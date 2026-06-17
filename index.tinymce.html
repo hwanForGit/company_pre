@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>중소기업인재키움프리미엄 - 인프런 AI 교육 90% 지원</title>
+<!-- Pretendard 폰트는 인프런 페이지 기본 제공 — 누락 시 font-family 폴백 -->
 
-<!-- Pretendard 폰트 (인프런 톤 재현용) -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-
-<!-- ============================================
-  CONFIG — 운영자 수정 영역
-  발급/변경 시 아래 값만 갱신하면 동작합니다.
-  실제 시크릿 값은 secrets.local.md 참고
-============================================ -->
+<!-- CONFIG -->
+<p>
 <script>
 window.SKP_CONFIG = {
   // Google Apps Script Web App URL — Drive 저장 + Slack Webhook 프록시
@@ -40,10 +29,9 @@ window.SKP_CONFIG = {
   GOV_PRIORITY_CHECK_URL: "https://itcampus.hankyung.com/promotion/20260213-b33ea1/imz/subpage.html"
 };
 </script>
+</p>
 
-<!-- ============================================
-  STYLES — skp- prefix로 격리
-============================================ -->
+<!-- STYLES -->
 <style>
 /* ========== 디자인 토큰 ========== */
 .skp-root {
@@ -1734,12 +1722,8 @@ body.skp-modal-active {
   }
 }
 </style>
-</head>
-<body>
 
-<!-- ============================================
-  본문 — 모든 콘텐츠는 .skp-root 안에 격리
-============================================ -->
+<!-- 본문 -->
 <div class="skp-root">
 
   <!-- ===== Hero 섹션 ===== -->
@@ -2363,10 +2347,8 @@ body.skp-modal-active {
 
 </div>
 
-<!-- ============================================
-  SCRIPTS — Phase 2: 신청 모달 (열기/닫기/검증)
-  Phase 3에서 제출 핸들러를 Slack 연동으로 교체 예정
-============================================ -->
+<!-- SCRIPTS: 신청 모달 -->
+<p>
 <script>
 (function() {
   'use strict';
@@ -2857,10 +2839,10 @@ body.skp-modal-active {
   }
 })();
 </script>
+</p>
 
-<!-- ============================================
-  지원 강의 소개 — scroll-reveal + 색상 자동 매핑 (course.html에서 이식)
-============================================ -->
+<!-- SCRIPTS: reveal / FAQ / 색상 매핑 -->
+<p>
 <script>
 (function () {
   // .infl-root가 여러 개일 수 있으므로 문서 전체를 대상으로 동작
@@ -2959,11 +2941,10 @@ body.skp-modal-active {
   }
 })();
 </script>
+</p>
 
-<!-- ============================================
-  MK-course-card-hydrate: list-render 런타임 (course.html과 동일)
-  인플런 강의 API를 호출해 컨테이너를 실시간으로 재렌더.
-============================================ -->
+<!-- SCRIPTS: 강의 카드 동적 갱신(월별 그룹) -->
+<p>
 <script>
 (function () {
   var cfgEl = document.getElementById('mk-list-render-config');
@@ -3211,6 +3192,4 @@ body.skp-modal-active {
   }
 })();
 </script>
-
-</body>
-</html>
+</p>

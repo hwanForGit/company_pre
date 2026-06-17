@@ -50,13 +50,11 @@ function doPost(e) {
     var mentionIds = data.mentionIds || [];
     var adminEmails = data.adminEmails || [];
 
-    // 입력 검증
+    // 입력 검증 — 파일은 선택사항(없어도 신청 접수 + Slack 알림 진행)
     if (!formData || !formData.company || !formData.name || !formData.email) {
       return jsonResponse({ success: false, error: 'Invalid form data' });
     }
-    if (!file || !file.name || !file.base64) {
-      return jsonResponse({ success: false, error: 'Invalid file payload' });
-    }
+    var hasFile = !!(file && file.name && file.base64);
 
     // Script Properties 확인
     var props = PropertiesService.getScriptProperties();
@@ -65,28 +63,33 @@ function doPost(e) {
     if (!slackWebhookUrl) {
       return jsonResponse({ success: false, error: 'SLACK_WEBHOOK_URL not configured in Script Properties' });
     }
-    if (!driveFolderId) {
-      return jsonResponse({ success: false, error: 'DRIVE_FOLDER_ID not configured in Script Properties' });
-    }
 
-    // 1) Drive에 파일 저장 (실패해도 메시지는 진행 — 폴백)
+    // 1) (파일이 있을 때만) Drive에 파일 저장 — 실패해도 메시지는 진행
     var driveUrl = null;
     var driveViewUrl = null;
     var uploadError = null;
-    try {
-      var result = saveFileToDrive(file, formData, driveFolderId);
-      driveUrl = result.directDownloadUrl;
-      driveViewUrl = result.viewUrl;
-    } catch (err) {
-      uploadError = (err && err.message) || String(err);
-      console.error('Drive upload failed: ' + uploadError);
+    if (hasFile) {
+      if (!driveFolderId) {
+        uploadError = 'DRIVE_FOLDER_ID not configured';
+        console.error(uploadError);
+      } else {
+        try {
+          var result = saveFileToDrive(file, formData, driveFolderId);
+          driveUrl = result.directDownloadUrl;
+          driveViewUrl = result.viewUrl;
+        } catch (err) {
+          uploadError = (err && err.message) || String(err);
+          console.error('Drive upload failed: ' + uploadError);
+        }
+      }
     }
 
     // 2) Block Kit 메시지 빌드
     var blocks = buildBlocks({
       formData: formData,
-      fileName: file.name,
-      fileSize: file.size || 0,
+      hasFile: hasFile,
+      fileName: hasFile ? file.name : '',
+      fileSize: hasFile ? (file.size || 0) : 0,
       driveUrl: driveUrl,
       driveViewUrl: driveViewUrl,
       uploadError: uploadError,
@@ -268,23 +271,23 @@ function buildBlocks(opts) {
 
   var safeFileName = slackEscape(fileName);
 
-  var fileLine;
-  if (driveUrl) {
+  var fileLine = null;
+  if (opts.hasFile && driveUrl) {
     fileLine =
       '*첨부 파일*\n' +
       '<' + driveUrl + '|' + safeFileName + '> (' + formatFileSize(fileSize) + ') — 클릭 시 즉시 다운로드\n' +
       '<' + driveViewUrl + '|Drive에서 열기>';
-  } else if (uploadError) {
+  } else if (opts.hasFile && uploadError) {
     fileLine =
       '*첨부 파일*\n⚠️ 파일 업로드 실패 — 신청자에게 직접 문의 필요\n' +
       '`' + safeFileName + '` (' + formatFileSize(fileSize) + ')\n' +
       '오류: ' + slackEscape(uploadError);
-  } else {
+  } else if (opts.hasFile) {
     fileLine =
       '*첨부 파일*\n`' + safeFileName + '` (' + formatFileSize(fileSize) + ')';
   }
 
-  return [
+  var blocks = [
     {
       type: 'section',
       text: { type: 'mrkdwn', text: headerText }
@@ -297,16 +300,23 @@ function buildBlocks(opts) {
         { type: 'mrkdwn', text: '*이메일*\n' + slackEscape(formData.email) },
         { type: 'mrkdwn', text: '*접수일시*\n' + formData.submittedAt + ' (KST)' }
       ]
-    },
-    {
-      type: 'section',
-      text: { type: 'mrkdwn', text: fileLine }
-    },
-    {
-      type: 'context',
-      elements: [
-        { type: 'mrkdwn', text: '담당자: ' + adminEmails.join(' · ') }
-      ]
     }
   ];
+
+  // 파일이 첨부된 경우에만 첨부 파일 섹션 추가
+  if (fileLine) {
+    blocks.push({
+      type: 'section',
+      text: { type: 'mrkdwn', text: fileLine }
+    });
+  }
+
+  blocks.push({
+    type: 'context',
+    elements: [
+      { type: 'mrkdwn', text: '담당자: ' + adminEmails.join(' · ') }
+    ]
+  });
+
+  return blocks;
 }
