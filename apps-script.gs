@@ -74,7 +74,7 @@ function doPost(e) {
         console.error(uploadError);
       } else {
         try {
-          var result = saveFileToDrive(file, formData, driveFolderId);
+          var result = saveFileToDrive(file, formData, driveFolderId, adminEmails);
           driveUrl = result.directDownloadUrl;
           driveViewUrl = result.viewUrl;
         } catch (err) {
@@ -120,11 +120,23 @@ function doPost(e) {
       });
     }
 
+    // 4) 리드 관리 시트에 행 추가 (실패해도 신청 자체는 성공 처리)
+    var leadLogged = false, leadError = null;
+    try {
+      appendLeadRow_(formData);
+      leadLogged = true;
+    } catch (e) {
+      leadError = (e && e.message) || String(e);
+      console.error('Lead sheet append failed: ' + leadError);
+    }
+
     return jsonResponse({
       success: true,
       fileUploaded: !!driveUrl,
       uploadError: uploadError,
-      driveUrl: driveUrl
+      driveUrl: driveUrl,
+      leadLogged: leadLogged,
+      leadError: leadError
     });
   } catch (err) {
     console.error('doPost error: ' + ((err && err.stack) || err));
@@ -195,7 +207,10 @@ function jsonResponse(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function saveFileToDrive(file, formData, folderId) {
+// 담당자 기본 이메일 — Drive 파일 공유 폴백 / 과거 파일 일괄 공유용
+var DEFAULT_ADMIN_EMAILS = ['ariel@inflab.com', 'shhwang@inflab.com', 'hj.kim@inflab.com'];
+
+function saveFileToDrive(file, formData, folderId, adminEmails) {
   var bytes = Utilities.base64Decode(file.base64);
   var mimeType = file.mimeType || 'application/octet-stream';
 
@@ -208,20 +223,25 @@ function saveFileToDrive(file, formData, folderId) {
   var folder = DriveApp.getFolderById(folderId);
   var driveFile = folder.createFile(blob);
 
-  // 공유 권한 설정 시도 — Workspace 정책에 따라 실패할 수 있음.
-  // 폴더 자체에 담당자 3명 권한이 사전 설정되어 있으면 파일이 상속받으므로
-  // 이 호출이 실패해도 담당자들은 정상 접근 가능. 따라서 try-catch로 무시.
+  // 1) 담당자(adminEmails)를 파일 뷰어로 직접 추가
+  //    외부/링크 공유가 조직 정책으로 막혀 있어도 담당자는 항상 열기/다운로드 가능 (403 방지)
+  var viewers = (adminEmails && adminEmails.length) ? adminEmails : DEFAULT_ADMIN_EMAILS;
+  if (viewers && viewers.length) {
+    try {
+      driveFile.addViewers(viewers);
+    } catch (e0) {
+      console.warn('addViewers 실패: ' + ((e0 && e0.message) || e0));
+    }
+  }
+
+  // 2) 링크 공유도 시도 — 정책 허용 시 링크가 있는 누구나 접근 (정책상 실패해도 1)이 보완)
   try {
     driveFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   } catch (err1) {
-    console.warn('setSharing ANYONE_WITH_LINK failed (will fall back): ' + err1.message);
-    // 회사 도메인 내부 공유 시도
     try {
       driveFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
-      console.log('setSharing DOMAIN_WITH_LINK succeeded');
     } catch (err2) {
-      console.warn('setSharing DOMAIN_WITH_LINK also failed: ' + err2.message);
-      console.warn('→ 폴더 사전 공유 권한에 의존합니다 (담당자가 폴더에 권한 있어야 다운로드 가능)');
+      console.warn('링크 공유 실패 — 담당자 뷰어 권한에 의존: ' + ((err2 && err2.message) || err2));
     }
   }
 
@@ -272,11 +292,12 @@ function buildBlocks(opts) {
   var safeFileName = slackEscape(fileName);
 
   var fileLine = null;
-  if (opts.hasFile && driveUrl) {
+  if (opts.hasFile && (driveViewUrl || driveUrl)) {
+    var openUrl = driveViewUrl || driveUrl;
     fileLine =
       '*첨부 파일*\n' +
-      '<' + driveUrl + '|' + safeFileName + '> (' + formatFileSize(fileSize) + ') — 클릭 시 즉시 다운로드\n' +
-      '<' + driveViewUrl + '|Drive에서 열기>';
+      '<' + openUrl + '|' + safeFileName + '> (' + formatFileSize(fileSize) + ') — 클릭하여 열기 · 다운로드' +
+      (driveUrl ? ('\n<' + driveUrl + '|직접 다운로드>') : '');
   } else if (opts.hasFile && uploadError) {
     fileLine =
       '*첨부 파일*\n⚠️ 파일 업로드 실패 — 신청자에게 직접 문의 필요\n' +
@@ -298,6 +319,7 @@ function buildBlocks(opts) {
         { type: 'mrkdwn', text: '*회사명*\n' + slackEscape(formData.company) },
         { type: 'mrkdwn', text: '*신청자*\n' + slackEscape(formData.name) },
         { type: 'mrkdwn', text: '*이메일*\n' + slackEscape(formData.email) },
+        { type: 'mrkdwn', text: '*연락처*\n' + slackEscape(formData.phone || '-') },
         { type: 'mrkdwn', text: '*접수일시*\n' + formData.submittedAt + ' (KST)' }
       ]
     }
@@ -319,4 +341,166 @@ function buildBlocks(opts) {
   });
 
   return blocks;
+}
+
+// ============================================================
+// 리드 관리 시트 (Google Sheets)
+//   컬럼: 날짜 | 기업명 | 이름 | 메일 | 연락처 | 추후 응대 | 특이사항
+//   매칭: 날짜←접수일시, 기업명←company, 이름←name, 메일←email, 연락처←phone
+// ============================================================
+
+var LEAD_HEADERS = ['날짜', '기업명', '이름', '메일', '연락처', '추후 응대', '특이사항'];
+var LEAD_SHEET_NAME = '중소기업인재키움프리미엄 리드 관리';
+
+// 시트를 가져오거나(없으면) 신청서 보관 Drive 폴더 안에 생성. ID는 Script Properties에 저장.
+function getLeadSheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var ssId = props.getProperty('LEAD_SPREADSHEET_ID');
+  var ss = null;
+  if (ssId) {
+    try { ss = SpreadsheetApp.openById(ssId); } catch (e) { ss = null; }
+  }
+  if (!ss) {
+    ss = SpreadsheetApp.create(LEAD_SHEET_NAME);
+    props.setProperty('LEAD_SPREADSHEET_ID', ss.getId());
+    var folderId = props.getProperty('DRIVE_FOLDER_ID');
+    if (folderId) {
+      try {
+        var file = DriveApp.getFileById(ss.getId());
+        DriveApp.getFolderById(folderId).addFile(file);
+        DriveApp.getRootFolder().removeFile(file);
+      } catch (e) { console.warn('시트 폴더 이동 실패(루트에 생성됨): ' + e); }
+    }
+  }
+  var sheet = ss.getSheets()[0];
+  ensureLeadHeader_(sheet);
+  return sheet;
+}
+
+function ensureLeadHeader_(sheet) {
+  var width = LEAD_HEADERS.length;
+  var firstRow = sheet.getRange(1, 1, 1, width).getValues()[0];
+  if (firstRow[0] === '날짜') return; // 이미 헤더 존재
+  if (sheet.getLastRow() !== 0) sheet.insertRowBefore(1);
+  sheet.getRange(1, 1, 1, width).setValues([LEAD_HEADERS]).setFontWeight('bold');
+  sheet.setFrozenRows(1);
+}
+
+function appendLeadRow_(formData) {
+  var sheet = getLeadSheet_();
+  var dateStr = String(formData.submittedAt || '').split(' ')[0];
+  sheet.appendRow([
+    dateStr,
+    formData.company || '',
+    formData.name || '',
+    formData.email || '',
+    formData.phone || '',
+    '',  // 추후 응대
+    ''   // 특이사항
+  ]);
+}
+
+// 🔧 시트 즉시 생성/확인 — 에디터 함수 드롭다운에서 실행하면 URL을 로그에 출력
+function setupLeadSheet() {
+  var sheet = getLeadSheet_();
+  var url = sheet.getParent().getUrl();
+  console.log('✅ 리드 관리 시트 준비 완료');
+  console.log('URL: ' + url);
+  return url;
+}
+
+// ============================================================
+// 기존 Drive 파일 → 신청자 정보 백필 (1회 수동 실행)
+//   에디터 함수 드롭다운에서 backfillLeadsFromDrive 선택 후 ▶ 실행
+//   - '신청정보' 텍스트 파일: 회사/이름/메일/날짜 전체 복원
+//   - 그 외(xlsx 등): 파일명 prefix에서 날짜·회사만 복원
+//   - 테스트(TEST/테스트/diag/무시/__) 항목은 제외
+//   - 회사+이름+메일 기준 중복은 건너뜀
+// ============================================================
+function backfillLeadsFromDrive() {
+  var props = PropertiesService.getScriptProperties();
+  var folderId = props.getProperty('DRIVE_FOLDER_ID');
+  if (!folderId) throw new Error('DRIVE_FOLDER_ID가 Script Properties에 없습니다.');
+
+  var sheet = getLeadSheet_();
+  var existing = {};
+  var last = sheet.getLastRow();
+  if (last >= 2) {
+    var rows = sheet.getRange(2, 1, last - 1, LEAD_HEADERS.length).getValues();
+    rows.forEach(function (r) { existing[leadKey_(r[1], r[2], r[3])] = true; });
+  }
+
+  var TEST_RE = /(test|테스트|diag|무시|__)/i;
+  var folder = DriveApp.getFolderById(folderId);
+  var files = folder.getFiles();
+  var collected = [];
+  while (files.hasNext()) {
+    var f = files.next();
+    var nm = f.getName();
+    if (nm.indexOf('리드 관리') !== -1) continue;
+    if (nm.indexOf('_skp_authorize_test') !== -1) continue;
+    var info = parseApplicantFromFile_(f);
+    if (!info) continue;
+    if (TEST_RE.test(info.company || '') || TEST_RE.test(info.name || '')) continue;
+    collected.push(info);
+  }
+  collected.sort(function (a, b) { return String(a.date || '').localeCompare(String(b.date || '')); });
+
+  var added = 0, dup = 0;
+  collected.forEach(function (info) {
+    var key = leadKey_(info.company, info.name, info.email);
+    if (existing[key]) { dup++; return; }
+    sheet.appendRow([info.date || '', info.company || '', info.name || '', info.email || '', info.phone || '', '', '']);
+    existing[key] = true;
+    added++;
+  });
+  console.log('✅ 백필 완료 — 추가 ' + added + '건, 중복 스킵 ' + dup + '건');
+  console.log('시트: ' + sheet.getParent().getUrl());
+  return { added: added, dup: dup };
+}
+
+function leadKey_(company, name, email) {
+  return [String(company || '').trim(), String(name || '').trim(), String(email || '').trim()].join('|').toLowerCase();
+}
+
+function parseApplicantFromFile_(file) {
+  var name = file.getName();
+  var info = { date: '', company: '', name: '', email: '', phone: '' };
+
+  // 파일명 prefix: yyyyMMdd-HHmmss_회사_원본명
+  var m = /^(\d{4})(\d{2})(\d{2})-\d{6}_([^_]*)_/.exec(name);
+  if (m) { info.date = m[1] + '-' + m[2] + '-' + m[3]; info.company = m[4]; }
+
+  // 신청정보 텍스트 파일이면 내용에서 상세 파싱
+  try {
+    var mime = file.getMimeType();
+    if (name.indexOf('신청정보') !== -1 || mime === 'text/plain') {
+      var text = file.getBlob().getDataAsString('UTF-8');
+      var c = /회사명\s*[:：]\s*(.+)/.exec(text);            if (c) info.company = c[1].trim();
+      var n = /신청자\s*[:：]\s*(.+)/.exec(text);            if (n) info.name = n[1].trim();
+      var e = /이메일\s*[:：]\s*(.+)/.exec(text);            if (e) info.email = e[1].trim();
+      var p = /(?:연락처|전화)\s*[:：]\s*(.+)/.exec(text);   if (p) info.phone = p[1].trim();
+      var d = /접수일시\s*[:：]\s*(\d{4}-\d{2}-\d{2})/.exec(text); if (d) info.date = d[1];
+    }
+  } catch (err) { /* 파싱 실패 무시 */ }
+
+  if (!info.company && !info.name && !info.email) return null;
+  return info;
+}
+
+// 🔧 과거 업로드 파일까지 담당자 뷰어로 일괄 추가 (403 소급 해결) — 에디터에서 1회 실행
+function shareAllFilesWithAdmins() {
+  var props = PropertiesService.getScriptProperties();
+  var folderId = props.getProperty('DRIVE_FOLDER_ID');
+  if (!folderId) throw new Error('DRIVE_FOLDER_ID가 Script Properties에 없습니다.');
+  var folder = DriveApp.getFolderById(folderId);
+  var files = folder.getFiles();
+  var n = 0, fail = 0;
+  while (files.hasNext()) {
+    var f = files.next();
+    try { f.addViewers(DEFAULT_ADMIN_EMAILS); n++; }
+    catch (e) { fail++; console.warn(f.getName() + ' 공유 실패: ' + ((e && e.message) || e)); }
+  }
+  console.log('✅ 과거 파일 담당자 공유 완료 — 성공 ' + n + '건, 실패 ' + fail + '건');
+  return { shared: n, failed: fail };
 }

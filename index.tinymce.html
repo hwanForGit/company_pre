@@ -2318,6 +2318,12 @@ body.skp-modal-active {
             <input type="email" class="skp-field-input" id="skp-email" placeholder="example@company.com" autocomplete="email">
             <div class="skp-field-error" id="skp-email-error"></div>
           </div>
+
+          <div class="skp-field">
+            <label class="skp-field-label" for="skp-phone">연락처 <span class="skp-required">*</span></label>
+            <input type="tel" class="skp-field-input" id="skp-phone" placeholder="010-1234-5678" autocomplete="tel">
+            <div class="skp-field-error" id="skp-phone-error"></div>
+          </div>
         </div>
 
         <div class="skp-submit-error" id="skp-submit-error" style="display: none;" role="alert"></div>
@@ -2367,6 +2373,7 @@ body.skp-modal-active {
     company: '',
     name: '',
     email: '',
+    phone: '',
     submitting: false,
     prevFocus: null     // 모달 열기 전 포커스 요소 (닫을 때 복귀용)
   };
@@ -2392,6 +2399,11 @@ body.skp-modal-active {
     return EMAIL_RE.test((v || '').trim());
   }
 
+  function validatePhone(v) {
+    var digits = (v || '').replace(/\D/g, '');
+    return digits.length >= 9 && digits.length <= 12;
+  }
+
   // === UI 업데이트 ===
   function setFieldError(input, errEl, hasError, msg) {
     if (hasError) {
@@ -2408,7 +2420,8 @@ body.skp-modal-active {
     var allValid = fileResult.ok
       && validateText(state.company)
       && validateText(state.name)
-      && validateEmail(state.email);
+      && validateEmail(state.email)
+      && validatePhone(state.phone);
 
     dom.submitBtn.disabled = !allValid || state.submitting;
   }
@@ -2474,6 +2487,18 @@ body.skp-modal-active {
       setFieldError(dom.emailInput, dom.emailError, true, '올바른 이메일 형식이 아닙니다.');
     } else {
       setFieldError(dom.emailInput, dom.emailError, false);
+    }
+    updateSubmitState();
+  }
+
+  function onPhoneInput(e) {
+    state.phone = e.target.value;
+    var hasInput = state.phone.length > 0;
+    var valid = validatePhone(state.phone);
+    if (hasInput && !valid) {
+      setFieldError(dom.phoneInput, dom.phoneError, true, '올바른 연락처를 입력해 주세요.');
+    } else {
+      setFieldError(dom.phoneInput, dom.phoneError, false);
     }
     updateSubmitState();
   }
@@ -2559,20 +2584,22 @@ body.skp-modal-active {
     state.company = '';
     state.name = '';
     state.email = '';
+    state.phone = '';
     state.submitting = false;
 
     dom.fileInput.value = '';
     dom.companyInput.value = '';
     dom.nameInput.value = '';
     dom.emailInput.value = '';
+    dom.phoneInput.value = '';
 
     dom.fileName.textContent = '파일을 선택해 주세요 (.xlsx, .xls)';
     dom.fileLabel.classList.remove('skp-file-selected', 'skp-has-error');
 
-    [dom.fileError, dom.companyError, dom.nameError, dom.emailError].forEach(function(el) {
+    [dom.fileError, dom.companyError, dom.nameError, dom.emailError, dom.phoneError].forEach(function(el) {
       if (el) el.textContent = '';
     });
-    [dom.companyInput, dom.nameInput, dom.emailInput].forEach(function(el) {
+    [dom.companyInput, dom.nameInput, dom.emailInput, dom.phoneInput].forEach(function(el) {
       if (el) el.classList.remove('skp-has-error');
     });
 
@@ -2669,7 +2696,7 @@ body.skp-modal-active {
 
     // 최종 검증 (중복 안전장치)
     var fileResult = validateFile(state.file);
-    if (!fileResult.ok || !validateText(state.company) || !validateText(state.name) || !validateEmail(state.email)) {
+    if (!fileResult.ok || !validateText(state.company) || !validateText(state.name) || !validateEmail(state.email) || !validatePhone(state.phone)) {
       console.warn('[SKP] 제출 거부 — 검증 실패');
       return;
     }
@@ -2685,6 +2712,7 @@ body.skp-modal-active {
       company: state.company.trim(),
       name: state.name.trim(),
       email: state.email.trim(),
+      phone: state.phone.trim(),
       submittedAt: formatKstNow()
     };
     var file = state.file;
@@ -2789,6 +2817,8 @@ body.skp-modal-active {
     dom.nameError = document.getElementById('skp-name-error');
     dom.emailInput = document.getElementById('skp-email');
     dom.emailError = document.getElementById('skp-email-error');
+    dom.phoneInput = document.getElementById('skp-phone');
+    dom.phoneError = document.getElementById('skp-phone-error');
     dom.submitBtn = document.getElementById('skp-submit-btn');
     dom.submitError = document.getElementById('skp-submit-error');
 
@@ -2812,6 +2842,7 @@ body.skp-modal-active {
     dom.companyInput.addEventListener('input', onCompanyInput);
     dom.nameInput.addEventListener('input', onNameInput);
     dom.emailInput.addEventListener('input', onEmailInput);
+    dom.phoneInput.addEventListener('input', onPhoneInput);
 
     // 제출
     dom.submitBtn.addEventListener('click', onSubmit);
